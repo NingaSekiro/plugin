@@ -16,21 +16,22 @@ import com.intellij.util.ui.JBUI;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
 
 import lombok.SneakyThrows;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
+import org.aopbuddy.plugin.infra.config.ServerConfig;
 import org.aopbuddy.plugin.infra.model.EvalRequest;
 import org.aopbuddy.plugin.service.JvmService;
+import org.aopbuddy.plugin.toolwindow.component.AddMethodBreakpointFrame;
 import org.aopbuddy.plugin.toolwindow.component.HintComboBox;
 import org.aopbuddy.plugin.toolwindow.component.MyEditorTextField;
 import org.jetbrains.plugins.groovy.GroovyFileType;
 
 public class GroovyConsolePanel extends OnePixelSplitter {
-    public static final String RUN_TIP_FORMAT = "Status: %s, Agent: %sms, Method: %sms";
-
     private final Project project;
 
     private JvmService jvmService = Singleton.get(JvmService.class);
@@ -44,6 +45,7 @@ public class GroovyConsolePanel extends OnePixelSplitter {
     private final HintComboBox<String> classloaderComboBox;
 
     private final MyEditorTextField runStatusEditor;
+    private final MyEditorTextField listenerStatusEditor;
 
 
     public GroovyConsolePanel(Project project) {
@@ -69,9 +71,12 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         this.classloaderComboBox = new HintComboBox<>(200);
         this.classloaderComboBox.setHint("2.选择classLoader");
 
+
         // 结果面板
         this.runStatusEditor = new MyEditorTextField(project, FileTypes.PLAIN_TEXT);
         this.runStatusEditor.setBorder(JBUI.Borders.empty(5));
+        this.listenerStatusEditor = new MyEditorTextField(project, FileTypes.PLAIN_TEXT);
+        this.listenerStatusEditor.setBorder(JBUI.Borders.empty(5));
         setFirstComponent(getGroovyConsolePanel());
         setSecondComponent(getJvmResultInfoPanel());
         project.getMessageBus().connect().subscribe(
@@ -108,13 +113,14 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         toolbarPanel.add(Box.createHorizontalGlue());
         toolbarPanel.add(Box.createHorizontalStrut(5));
         // 结果面板
-        JPanel runStatusPanel = new JPanel(new BorderLayout());
-        runStatusPanel.setBorder(JBUI.Borders.empty());
-        runStatusPanel.add(this.runStatusEditor, "Center");
+        JBTabbedPane groovyTabbedPane = new JBTabbedPane();
+        groovyTabbedPane.setBorder(new CustomLineBorder(JBUI.insetsTop(1)));
+        groovyTabbedPane.add("执行方法结果", this.runStatusEditor);
+        groovyTabbedPane.add("监控方法结果", this.listenerStatusEditor);
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.setBorder(JBUI.Borders.empty());
         rootPanel.add(toolbarPanel, "North");
-        rootPanel.add(runStatusPanel, "Center");
+        rootPanel.add(groovyTabbedPane, "Center");
         return rootPanel;
     }
 
@@ -126,7 +132,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
             Messages.showInfoMessage("当前没有找到正在运行的JVM进程", "提示");
             return;
         }
-
         // 显示选择对话框
         String selectedProcess = Messages.showEditableChooseDialog(
                 "请选择要连接的JVM进程:",
@@ -141,11 +146,35 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         if (selectedProcess != null) {
             // 从选择的文本中提取PID（第一个空格前的部分）
             // 将选中的PID添加到ComboBox中
-            jvmService.attach(selectedProcess);
+            if (!ServerConfig.getInstance().getServerMap().containsKey(selectedProcess)) {
+                jvmService.attach(selectedProcess);
+            }
             updatePidComboBox(selectedProcess);
         }
-
     }
+
+//    private void showListenerSelection() {
+//        AddMethodBreakpointFrame frame = new AddMethodBreakpointFrame((result, classPattern, methodName) -> {
+//            if (result == AddMethodBreakpointFrame.DialogResult.OK) {
+//                String listener = classPattern + "#" + methodName;
+//                updateListenerComboBox(listener);
+//            }
+//        });
+//        frame.setVisible(true);
+//        String pid = pidComboBox.getSelectedItem().toString().split(" - ")[0];
+//        String classloader = classloaderComboBox.getSelectedItem().toString();
+//        List<String> listenerDataList = new ArrayList<>();
+//        for (int i = 1; i < listenerBox.getItemCount(); i++) { // 从索引1开始，跳过提示项
+//            String item = listenerBox.getItemAt(i);
+//            if (item != null) {
+//                listenerDataList.add(item);
+//            }
+//        }
+//
+//
+//        EvalRequest evalRequest = new EvalRequest(pid, classloader, "script");
+//        jvmService.eval(pidComboBox.getSelectedItem().toString(), evalRequest);
+//    }
 
     private void updatePidComboBox(String selectedProcess) {
         // 检查PID是否已存在于ComboBox中
@@ -157,15 +186,31 @@ public class GroovyConsolePanel extends OnePixelSplitter {
                 break;
             }
         }
-
         // 如果不存在，则添加到ComboBox中
         if (!exists) {
             pidComboBox.addItem(selectedProcess);
-        }
+            pidComboBox.setSelectedItem(selectedProcess);
 
-        // 选择该PID
-        pidComboBox.setSelectedItem(selectedProcess);
+        }
     }
+
+//    private void updateListenerComboBox(String listener) {
+//        // 检查监听是否已存在于ComboBox中
+//        boolean exists = false;
+//        for (int i = 0; i < listenerBox.getItemCount(); i++) {
+//            String item = listenerBox.getItemAt(i);
+//            if (item != null && item.equals(listener)) {
+//                exists = true;
+//                break;
+//            }
+//        }
+//        // 如果不存在，则添加到ComboBox中
+//        if (!exists) {
+//            listenerBox.addItem(listener);
+//            pidComboBox.setSelectedItem(listener);
+//        }
+//    }
+
 
     private void updateClassloaderComboBox() {
         JvmService jvmService = Singleton.get(JvmService.class);

@@ -1,6 +1,7 @@
 package org.aopbuddy.plugin.service;
 
 import cn.hutool.http.HttpUtil;
+import cn.hutool.http.server.SimpleServer;
 import cn.hutool.json.JSONUtil;
 import com.sun.tools.attach.*;
 import org.aopbuddy.plugin.infra.config.ServerConfig;
@@ -8,6 +9,7 @@ import org.aopbuddy.plugin.infra.model.EvalRequest;
 import org.aopbuddy.plugin.infra.model.HttpServer;
 import org.aopbuddy.plugin.infra.util.PluginPathUtil;
 import org.aopbuddy.plugin.infra.util.PortUtil;
+import org.aopbuddy.plugin.servlet.ListenerServlet;
 
 import javax.sound.sampled.Port;
 import java.io.File;
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 public class JvmService {
+    private SimpleServer simpleServer;
+
     public List<String> getJvms() {
         List<VirtualMachineDescriptor> vms = VirtualMachine.list();
         List<String> processList = new ArrayList<>();
@@ -39,7 +43,7 @@ public class JvmService {
         File pluginDir = PluginPathUtil.getPluginDirectory();
         int freePort = PortUtil.findFreePort();
         try {
-            vm.loadAgent(pluginDir.getAbsolutePath() + File.separator + "lib" + File.separator + "aopbuddy-1.0-jar-with-dependencies.jar", String.valueOf(freePort));
+            vm.loadAgent(pluginDir.getAbsolutePath() + File.separator + "lib" + File.separator + "agent-jar-with-dependencies.jar", String.valueOf(freePort));
         } catch (AgentLoadException e) {
             if (!"0".equals(e.getMessage())) {
                 throw e;
@@ -61,5 +65,16 @@ public class JvmService {
         return HttpUtil.post("http://" + server.getIp() + ":" + server.getPort() + "/eval", JSONUtil.toJsonStr(evalRequest));
     }
 
+
+    public void startServer() {
+        if (this.simpleServer != null) {
+            return;
+        }
+        SimpleServer simpleServer = HttpUtil.createServer(8800)
+                .addAction("/listener", new ListenerServlet());
+        simpleServer
+                .start();
+        this.simpleServer = simpleServer;
+    }
 
 }
