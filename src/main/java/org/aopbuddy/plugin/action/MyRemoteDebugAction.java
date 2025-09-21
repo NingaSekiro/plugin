@@ -1,174 +1,130 @@
-package org.aopbuddy.plugin.action;
-
-import com.intellij.debugger.DebuggerManager;
-import com.intellij.debugger.DebuggerManagerEx;
-import com.intellij.debugger.engine.DebugProcessImpl;
-import com.intellij.debugger.engine.SuspendContextImpl;
-import com.intellij.debugger.impl.DebuggerManagerImpl;
-import com.intellij.debugger.impl.DebuggerSession;
-import com.intellij.debugger.ui.breakpoints.JavaWildcardMethodBreakpointType;
-import com.intellij.debugger.ui.breakpoints.WildcardMethodBreakpoint;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.WriteAction;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.PsiShortNamesCache;
-import com.intellij.xdebugger.*;
-import com.intellij.xdebugger.breakpoints.*;
-import com.intellij.xdebugger.frame.XStackFrame;
-import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
-import com.intellij.xdebugger.impl.breakpoints.XBreakpointManagerImpl;
-import com.intellij.xdebugger.impl.breakpoints.XExpressionImpl;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventQueue;
-import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.EventRequestManager;
-import com.sun.jdi.request.MethodEntryRequest;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.java.debugger.breakpoints.properties.JavaMethodBreakpointProperties;
-import com.intellij.xdebugger.XDebuggerManager;
-import com.intellij.xdebugger.breakpoints.XBreakpoint;
-import com.intellij.xdebugger.breakpoints.XBreakpointManager;
-import com.intellij.xdebugger.breakpoints.XBreakpointType;
-// FIX: Ensure both BreakpointType and its Properties are imported from the same package.
-import com.intellij.debugger.ui.breakpoints.JavaMethodBreakpointType;
-import org.jetbrains.annotations.NotNull;
-
-import static com.intellij.notification.ActionCenter.showNotification;
-
-public class MyRemoteDebugAction extends AnAction {
-
-    private XBreakpoint methodEntryBreakpoint;
-
-    @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        actionPerformed2(e);
-    }
-
-    public void actionPerformed0(@NotNull AnActionEvent e) {
-
-        // 获取当前 Debug 会话
-        XDebugSession session = XDebuggerManager.getInstance(e.getProject()).getCurrentSession();
-        if (session == null) {
-            System.err.println("no session");
-            return;
-        }
-        // 获取当前栈帧
-        XStackFrame frame = session.getCurrentStackFrame();
-        if (frame == null) {
-            System.err.println("no frame");
-            return;
-        }
-
-        // 获取 Evaluator
-        XDebuggerEvaluator evaluator = frame.getEvaluator();
-        if (evaluator == null) {
-            System.err.println("no evaluator");
-            return;
-        }
-        // 要执行的表达式 (⚠️ 在远程 JVM 上执行！)
-        String expr = "java.nio.file.Files.write(" +
-                "java.nio.file.Paths.get(\"D:/tmp/remote-output.jar\")," +
-                "new byte[]{65,66,67,68})"; // 写入 ABCD
-        // 构建 XExpression
-        XExpression xExpression = XExpressionImpl.fromText(expr);
-        // 异步执行
-        evaluator.evaluate(xExpression, new XDebuggerEvaluator.XEvaluationCallback() {
-            @Override
-            public void evaluated(@NotNull com.intellij.xdebugger.frame.XValue result) {
-                System.out.println("success: " + result.toString());
-                // 执行完成后删除方法入口断点
-                removeMethodEntryBreakpoint(session);
-            }
-
-            @Override
-            public void errorOccurred(@NotNull String errorMessage) {
-                System.err.println("fail: " + errorMessage);
-                // 执行失败时也删除方法入口断点
-                removeMethodEntryBreakpoint(session);
-            }
-        }, frame.getSourcePosition());
-    }
-
-
-    public void actionPerformed2(@NotNull AnActionEvent e) {
-        Project project = e.getProject();
-        if (project == null) return;
-
-        // 获取当前调试会话
-        XDebugSession session = XDebuggerManager.getInstance(e.getProject()).getCurrentSession();
-
-
-        // 在后台线程中添加断点
-        addMethodBreakpoint(project);
-    }
-
-    private void addMethodBreakpoint(Project project) {
-        registerDebugSessionListener(project);
-        XDebuggerManager debuggerManager = XDebuggerManager.getInstance(project);
-        XBreakpointManager breakpointManager = debuggerManager.getBreakpointManager();
-        JavaWildcardMethodBreakpointType breakpointType = new JavaWildcardMethodBreakpointType();
-        JavaMethodBreakpointProperties properties = new JavaMethodBreakpointProperties("Main", "test");
-        properties.EMULATED = true; // 使用模拟模式提高性能
-        properties.WATCH_ENTRY = true; // 监听方法进入
-        properties.WATCH_EXIT = false; // 不监听方法退出
-        ApplicationManager.getApplication().invokeLater(() -> {
-            WriteAction.run(() -> {
-                XBreakpoint<JavaMethodBreakpointProperties> javaMethodBreakpointPropertiesXBreakpoint = breakpointManager.addBreakpoint(breakpointType, properties);
-                javaMethodBreakpointPropertiesXBreakpoint.setSuspendPolicy(SuspendPolicy.THREAD);
-            });
-        });
-
-    }
-
-
-    /**
-     * 删除方法入口断点
-     */
-    private void removeMethodEntryBreakpoint(XDebugSession session) {
-        try {
-            if (methodEntryBreakpoint != null) {
-                XBreakpointManager breakpointManager = XDebuggerManager.getInstance(session.getProject()).getBreakpointManager();
-                breakpointManager.removeBreakpoint(methodEntryBreakpoint);
-                methodEntryBreakpoint = null;
-                System.out.println("方法入口断点已删除");
-            }
-        } catch (Exception e) {
-            System.err.println("删除方法入口断点失败: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void registerDebugSessionListener(@NotNull Project project) {
-        XDebugSession currentSession = XDebuggerManager.getInstance(project).getCurrentSession();
-        // 创建新的会话监听器
-        XDebugSessionListener mySessionListener = new XDebugSessionListener() {
-            public void sessionPaused(@NotNull XDebugSession session) {
-                // 检查是否是我们的方法断点触发的暂停
-                XStackFrame currentFrame = session.getCurrentStackFrame();
-                if (currentFrame != null) {
-                    // 获取当前断点
-                    SuspendContextImpl context = (SuspendContextImpl) session.getSuspendContext();
-                    DebugProcessImpl debugProcess = context.getDebugProcess();
-                    SuspendContextImpl pausedContext = debugProcess.getSuspendManager().getPausedContext();
-                    // 2. 通过调试进程获取当前命中的断点
-                    // 注意：具体实现可能因不同的调试器而异
-
-                }
-            }
-        };
-        currentSession.addSessionListener(mySessionListener);
-
-    }
-
-
-}
+//package org.aopbuddy.plugin.action;
+//
+//import com.intellij.debugger.engine.DebugProcessImpl;
+//import com.intellij.debugger.engine.SuspendContext;
+//import com.intellij.debugger.engine.SuspendContextImpl;
+//import com.intellij.debugger.impl.DebuggerUtilsImpl;
+//import com.intellij.debugger.ui.breakpoints.Breakpoint;
+//import com.intellij.openapi.actionSystem.AnAction;
+//import com.intellij.openapi.actionSystem.AnActionEvent;
+//import com.intellij.openapi.project.Project;
+//import com.sun.jdi.*;
+//
+//import java.io.IOException;
+//import java.nio.file.Files;
+//import java.nio.file.Paths;
+//import java.util.ArrayList;
+//import java.util.List;
+//
+//public class MyRemoteDebugAction extends AnAction {
+//    private static final String TARGET_CLASS = "your.target.TargetClass"; // e.g., "com.example.Target"
+//    private static final int BREAKPOINT_LINE = 42; // 目标行号
+//    private static final String HOST = "127.0.0.1";
+//    private static final int PORT = 5005;
+//
+//    // 本地jar文件路径
+//    private static final String LOCAL_JAR_PATH = "lib/aopbuddy-1.0-jar-with-dependencies.jar";
+//
+//    @Override
+//    public void actionPerformed(AnActionEvent e) {
+//        // 这里可以添加触发远程调试的逻辑
+//    }
+//
+//    public void breakpointReached(Breakpoint bp, SuspendContext ctx) {
+//        DebugProcessImpl debugProcess = (DebugProcessImpl) ctx.getDebugProcess();
+//        VirtualMachine vm = debugProcess.getVirtualMachineProxy().getVirtualMachine();
+//        ThreadReference thread = ((SuspendContextImpl) ctx).getThread().getThreadReference();
+//
+//        try {
+//            // 获取项目根路径
+//            String projectBasePath = debugProcess.getProject().getBasePath();
+//            String fullJarPath = projectBasePath + "/" + LOCAL_JAR_PATH;
+//
+//            // 1. 读取本地jar文件
+//            byte[] localBytes = Files.readAllBytes(Paths.get(fullJarPath));
+//            ArrayReference remoteBytes = (ArrayReference) debugProcess.getVirtualMachineProxy().mirrorOf(localBytes);
+//
+//            // 2. 获取远程服务器的用户主目录路径
+//            List<ReferenceType> systemClasses = vm.classesByName("java.lang.System");
+//            if (systemClasses.isEmpty()) {
+//                System.err.println("无法找到 java.lang.System 类");
+//                return;
+//            }
+//            ReferenceType systemClass = systemClasses.get(0);
+//            List<Method> getMethods = systemClass.methodsByName("getProperty", "(Ljava/lang/String;)Ljava/lang/String;");
+//            if (getMethods.isEmpty()) {
+//                System.err.println("无法找到 System.getProperty 方法");
+//                return;
+//            }
+//            Method getPropertyMethod = getMethods.get(0);
+//            StringReference userHomeKey = debugProcess.getVirtualMachineProxy().mirrorOf("user.home");
+//
+//            List<Value> args = new ArrayList<Value>();
+//            args.add(userHomeKey);
+//            Value userHomeValue = ((ClassType) systemClass).invokeMethod(thread, getPropertyMethod, args, ObjectReference.INVOKE_SINGLE_THREADED);
+//
+//            String userHome = ((StringReference) userHomeValue).value();
+//            String remoteJarPath = userHome + "/aopbuddy-1.0-jar-with-dependencies.jar";
+//
+//            // 3. 构造 Path 对象 (Paths.get(remoteJarPath))
+//            List<ReferenceType> pathsClasses = vm.classesByName("java.nio.file.Paths");
+//            if (pathsClasses.isEmpty()) {
+//                System.err.println("无法找到 java.nio.file.Paths 类");
+//                return;
+//            }
+//            ReferenceType pathsClass = pathsClasses.get(0);
+//            List<Method> getMethodsList = pathsClass.methodsByName("get", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/nio/file/Path;");
+//            if (getMethodsList.isEmpty()) {
+//                System.err.println("无法找到 Paths.get 方法");
+//                return;
+//            }
+//            Method getMethod = getMethodsList.get(0);
+//            StringReference pathStr = debugProcess.getVirtualMachineProxy().mirrorOf(remoteJarPath);
+//            ArrayReference emptyArray = debugProcess.getVirtualMachineProxy().mirrorOf(new String[0]);
+//
+//            List<Value> pathArgs = new ArrayList<Value>();
+//            pathArgs.add(pathStr);
+//            pathArgs.add(emptyArray);
+//            Value pathObj = ((ClassType) pathsClass).invokeMethod(thread, getMethod, pathArgs, ObjectReference.INVOKE_SINGLE_THREADED);
+//
+//            // 4. 调用 Files.write(Path, byte[])
+//            List<ReferenceType> filesClasses = vm.classesByName("java.nio.file.Files");
+//            if (filesClasses.isEmpty()) {
+//                System.err.println("无法找到 java.nio.file.Files 类");
+//                return;
+//            }
+//            ReferenceType filesClass = filesClasses.get(0);
+//            List<Method> writeMethods = filesClass.methodsByName("write", "(Ljava/nio/file/Path;[B)Ljava/nio/file/Path;");
+//            if (writeMethods.isEmpty()) {
+//                System.err.println("无法找到 Files.write 方法");
+//                return;
+//            }
+//            Method writeMethod = writeMethods.get(0);
+//
+//            List<Value> writeArgs = new ArrayList<Value>();
+//            writeArgs.add(pathObj);
+//            writeArgs.add(remoteBytes);
+//            ((ClassType) filesClass).invokeMethod(thread, writeMethod, writeArgs, ObjectReference.INVOKE_SINGLE_THREADED);
+//
+//            System.out.println("远程 Files.write 调用完成！文件已传输到: " + remoteJarPath);
+//        } catch (IOException e) {
+//            System.err.println("IO异常: " + e.getMessage());
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            System.err.println("中断异常: " + e.getMessage());
+//            e.printStackTrace();
+//        } catch (InvocationException e) {
+//            System.err.println("调用异常: " + e.getMessage());
+//            e.printStackTrace();
+//        } catch (ClassNotLoadedException e) {
+//            System.err.println("类未加载异常: " + e.getMessage());
+//            e.printStackTrace();
+//        } catch (IncompatibleThreadStateException e) {
+//            System.err.println("线程状态不兼容异常: " + e.getMessage());
+//            e.printStackTrace();
+//        } catch (Exception e) {
+//            System.err.println("其他异常: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
+//}

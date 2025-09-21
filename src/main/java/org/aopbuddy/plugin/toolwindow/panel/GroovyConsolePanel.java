@@ -1,41 +1,30 @@
 package org.aopbuddy.plugin.toolwindow.panel;
 
-import cn.hutool.core.lang.Singleton;
-import cn.hutool.core.util.StrUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.openapi.project.Project;
-
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.ui.JBUI;
-
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.*;
-
 import lombok.SneakyThrows;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
 import org.aopbuddy.plugin.infra.config.ServerConfig;
-import org.aopbuddy.plugin.infra.model.EvalRequest;
+import org.aopbuddy.plugin.service.ConsoleStateService;
 import org.aopbuddy.plugin.service.JvmService;
-import org.aopbuddy.plugin.toolwindow.component.AddMethodBreakpointFrame;
 import org.aopbuddy.plugin.toolwindow.component.HintComboBox;
 import org.aopbuddy.plugin.toolwindow.component.MyEditorTextField;
 import org.jetbrains.plugins.groovy.GroovyFileType;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
 public class GroovyConsolePanel extends OnePixelSplitter {
     private final Project project;
-
-    private JvmService jvmService = Singleton.get(JvmService.class);
-
+    private final ConsoleStateService consoleStateService;
+    private final JvmService jvmService;
 
     private final MyEditorTextField groovyEditor;
 
@@ -51,6 +40,8 @@ public class GroovyConsolePanel extends OnePixelSplitter {
     public GroovyConsolePanel(Project project) {
         super(false, "JZ.ConsoleRun", 0.6F);
         this.project = project;
+        this.consoleStateService = project.getService(ConsoleStateService.class);
+        this.jvmService = project.getService(JvmService.class);
         // 编辑器
         this.groovyEditor = new MyEditorTextField(project, GroovyFileType.GROOVY_FILE_TYPE);
         this.groovyEditor.setBorder(JBUI.Borders.empty(5));
@@ -64,12 +55,20 @@ public class GroovyConsolePanel extends OnePixelSplitter {
             if (pidComboBox.getSelectedIndex() == 0) {
                 showJvmProcessSelection();
             } else {
+                // 更新状态服务中的选中PID
+                consoleStateService.setServerName(pidComboBox.getSelectedItem().toString());
                 updateClassloaderComboBox();
             }
         });
         // 类加载器下拉框
         this.classloaderComboBox = new HintComboBox<>(200);
         this.classloaderComboBox.setHint("2.选择classLoader");
+        this.classloaderComboBox.addActionListener(e -> {
+            // 更新状态服务中的选中ClassLoader
+            if (classloaderComboBox.getSelectedItem() != null) {
+                consoleStateService.setSelectedClassloader(classloaderComboBox.getSelectedItem().toString());
+            }
+        });
 
 
         // 结果面板
@@ -117,6 +116,12 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         groovyTabbedPane.setBorder(new CustomLineBorder(JBUI.insetsTop(1)));
         groovyTabbedPane.add("执行方法结果", this.runStatusEditor);
         groovyTabbedPane.add("监控方法结果", this.listenerStatusEditor);
+        groovyTabbedPane.addChangeListener(e -> {
+            if (groovyTabbedPane.getSelectedIndex() == 1) {
+                String eval = jvmService.eval("readListenerLog()");
+                listenerStatusEditor.setText(eval);
+            }
+        });
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.setBorder(JBUI.Borders.empty());
         rootPanel.add(toolbarPanel, "North");
@@ -144,8 +149,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
 
         // 如果用户选择了进程
         if (selectedProcess != null) {
-            // 从选择的文本中提取PID（第一个空格前的部分）
-            // 将选中的PID添加到ComboBox中
             if (!ServerConfig.getInstance().getServerMap().containsKey(selectedProcess)) {
                 jvmService.attach(selectedProcess);
             }
@@ -153,28 +156,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         }
     }
 
-//    private void showListenerSelection() {
-//        AddMethodBreakpointFrame frame = new AddMethodBreakpointFrame((result, classPattern, methodName) -> {
-//            if (result == AddMethodBreakpointFrame.DialogResult.OK) {
-//                String listener = classPattern + "#" + methodName;
-//                updateListenerComboBox(listener);
-//            }
-//        });
-//        frame.setVisible(true);
-//        String pid = pidComboBox.getSelectedItem().toString().split(" - ")[0];
-//        String classloader = classloaderComboBox.getSelectedItem().toString();
-//        List<String> listenerDataList = new ArrayList<>();
-//        for (int i = 1; i < listenerBox.getItemCount(); i++) { // 从索引1开始，跳过提示项
-//            String item = listenerBox.getItemAt(i);
-//            if (item != null) {
-//                listenerDataList.add(item);
-//            }
-//        }
-//
-//
-//        EvalRequest evalRequest = new EvalRequest(pid, classloader, "script");
-//        jvmService.eval(pidComboBox.getSelectedItem().toString(), evalRequest);
-//    }
 
     private void updatePidComboBox(String selectedProcess) {
         // 检查PID是否已存在于ComboBox中
@@ -190,36 +171,24 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         if (!exists) {
             pidComboBox.addItem(selectedProcess);
             pidComboBox.setSelectedItem(selectedProcess);
-
+            // 更新状态服务中的选中PID
+            consoleStateService.setServerName(selectedProcess);
         }
     }
 
-//    private void updateListenerComboBox(String listener) {
-//        // 检查监听是否已存在于ComboBox中
-//        boolean exists = false;
-//        for (int i = 0; i < listenerBox.getItemCount(); i++) {
-//            String item = listenerBox.getItemAt(i);
-//            if (item != null && item.equals(listener)) {
-//                exists = true;
-//                break;
-//            }
-//        }
-//        // 如果不存在，则添加到ComboBox中
-//        if (!exists) {
-//            listenerBox.addItem(listener);
-//            pidComboBox.setSelectedItem(listener);
-//        }
-//    }
-
 
     private void updateClassloaderComboBox() {
-        JvmService jvmService = Singleton.get(JvmService.class);
-        List<String> classloaders = jvmService.getClassloaders(pidComboBox.getSelectedItem().toString());
+        List<String> classloaders = jvmService.getClassloaders();
         classloaderComboBox.removeAllItems();
         for (String classloader : classloaders) {
             classloaderComboBox.addItem(classloader);
         }
         classloaderComboBox.setSelectedIndex(0);
+        // 更新状态服务中的可用ClassLoader列表和选中ClassLoader
+        consoleStateService.setAvailableClassloaders(classloaders);
+        if (!classloaders.isEmpty()) {
+            consoleStateService.setSelectedClassloader(classloaders.get(0));
+        }
     }
 
 
@@ -230,15 +199,7 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         amplifierButton.setToolTipText("执行");
         amplifierButton.setPreferredSize(new Dimension(30, 30));
         amplifierButton.addActionListener(e -> {
-            String script = groovyEditor.getText();
-            String classloader = classloaderComboBox.getSelectedItem().toString();
-            String pid = pidComboBox.getSelectedItem().toString().split(" - ")[0];
-            if (StrUtil.isEmpty(script) || StrUtil.isEmpty(classloader) || StrUtil.isEmpty(script)) {
-                Messages.showInfoMessage("pid,classloader,script不能为空", "提示");
-                return;
-            }
-            EvalRequest evalRequest = new EvalRequest(pid, classloader, script);
-            String result = jvmService.eval(pidComboBox.getSelectedItem().toString(), evalRequest);
+            String result = jvmService.eval(groovyEditor.getText());
             runStatusEditor.setText(result);
         });
         return amplifierButton;

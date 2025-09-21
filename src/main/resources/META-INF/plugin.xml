@@ -29,14 +29,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="AopPlugin.Tool" factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory" doNotActivateOnStart="true" canCloseContents="false" anchor="bottom" />
         <applicationService serviceImplementation="org.aopbuddy.plugin.infra.config.ServerConfig"/>
+        <projectService serviceImplementation="org.aopbuddy.plugin.service.JvmService"/>
     </extensions>
     <actions>
         <action class="org.aopbuddy.plugin.action.RunMethodAction" text="Default Run Method">
             <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="EditorToggleColumnMode" />
         </action>
-<!--        <action id="EvalAction" class="org.aopbuddy.plugin.action.MyRemoteDebugAction"-->
-<!--                text="Eval Remote Write" description="Evaluate Files.write on remote JVM">-->
-<!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
-<!--        </action>-->
     </actions>
 </idea-plugin>
