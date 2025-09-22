@@ -1,10 +1,15 @@
 plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.17.3"
+    kotlin("jvm")
 }
 
 group = "org.aopbuddy"
 version = "1.0-SNAPSHOT"
+
+kotlin {
+    jvmToolchain(17)
+}
 
 repositories {
     mavenCentral()
@@ -16,10 +21,12 @@ intellij {
     version.set("2023.2.6")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf(
-        "java",
-        "org.intellij.groovy"
-    ))
+    plugins.set(
+        listOf(
+            "java",
+            "org.intellij.groovy"
+        )
+    )
 }
 
 
@@ -33,9 +40,9 @@ dependencies {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
+        options.encoding = "UTF-8"
         sourceCompatibility = "17"
         targetCompatibility = "17"
-        options.encoding = "UTF-8"
 
     }
     intellij {
