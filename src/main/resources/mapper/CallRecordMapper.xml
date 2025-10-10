@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.aopbuddy.plugin.mapper.CallRecordMapper">
+    <resultMap id="BaseResultMap" type="com.aopbuddy.record.CallRecordDo">
+        <result column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="CALL_CHAIN_ID" jdbcType="BIGINT" property="callChainId"/>
+        <result column="METHOD" jdbcType="VARCHAR" property="method"/>
+        <result column="ARGS" jdbcType="VARCHAR" property="args"/>
+        <result column="RETURN_VALUE" jdbcType="VARCHAR" property="returnValue"/>
+        <result column="TARGET" jdbcType="VARCHAR" property="target"/>
+        <result column="TIMESTAMP" jdbcType="TIMESTAMP" property="timestamp"/>
+    </resultMap>
+    <insert id="insertBatchCallRecords" parameterType="list">
+        INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target)
+        VALUES
+        <foreach collection="list" item="record" separator=",">
+            (#{record.callChainId},#{record.method}, #{record.args},#{record.returnValue},#{record.target})
+        </foreach>
+    </insert>
+
+    <select id="selectByIdGreaterThan" parameterType="long" resultMap="BaseResultMap">
+        SELECT id,
+               call_chain_id,
+               method,
+               args,
+               return_value,
+               target,
+               timestamp
+        FROM ${tableName}
+        WHERE id > #{id}
+    </select>
+
+    <select id="selectMaxChainId" resultType="int">
+        SELECT COALESCE(MAX(call_chain_id), -1) AS max
+        FROM ${tableName}
+    </select>
+
+    <select id="selectByMethods" parameterType="list" resultMap="BaseResultMap">
+        SELECT id,
+        call_chain_id,
+        method,
+        args,
+        return_value,
+        target,
+        timestamp
+        FROM ${tableName}
+        WHERE method IN
+        <foreach collection="list" item="method" open="(" separator="," close=")">
+            #{method}
+        </foreach>
+    </select>
+
+
+    <!-- 创建 CallRecord 表 -->
+    <update id="createTableWithName" parameterType="string">
+        CREATE TABLE IF NOT EXISTS ${tableName} (
+        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        call_chain_id BIGINT,
+        method VARCHAR(255),
+        args TEXT,
+        return_value TEXT,
+        target TEXT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        <!-- 创建索引以优化查询，索引名也包含表名以避免冲突 -->
+        CREATE INDEX IF NOT EXISTS idx_${tableName}_method ON ${tableName} (method);
+    </update>
+
+    <!-- 删除 CallRecord 表 -->
+    <update id="dropTableWithName" parameterType="string">
+        DROP TABLE IF EXISTS ${tableName}
+    </update>
+
+    <!--查出所有表明-->
+    <select id="selectAllTableNames" resultType="java.lang.String">
+        SHOW TABLES
+    </select>
+</mapper>

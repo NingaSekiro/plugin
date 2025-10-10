@@ -1,18 +1,15 @@
 plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.17.3"
-    kotlin("jvm")
 }
 
 group = "org.aopbuddy"
 version = "1.0-SNAPSHOT"
 
-kotlin {
-    jvmToolchain(17)
-}
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -31,8 +28,14 @@ intellij {
 
 
 dependencies {
-    implementation(fileTree("lib") { include("*.jar") })
+    implementation(files("D:\\Code\\aopbuddy\\target\\agent-jar-with-dependencies.jar"))
     implementation("cn.hutool:hutool-all:5.8.40")
+    implementation("org.mybatis:mybatis:3.5.16")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.h2database:h2:2.3.232")
+    // junit5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0-M1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M1")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 }
@@ -47,6 +50,9 @@ tasks {
     }
     intellij {
         updateSinceUntilBuild.set(false)
+    }
+    withType<Test> {
+        useJUnitPlatform()
     }
 
     patchPluginXml {

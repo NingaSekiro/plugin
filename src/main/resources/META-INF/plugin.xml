@@ -27,13 +27,15 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="AopPlugin.Tool" factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory" doNotActivateOnStart="true" canCloseContents="false" anchor="bottom" />
-        <applicationService serviceImplementation="org.aopbuddy.plugin.infra.config.ServerConfig"/>
-        <projectService serviceImplementation="org.aopbuddy.plugin.service.JvmService"/>
+        <toolWindow id="AopPlugin.Tool" factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
+                    doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
     </extensions>
     <actions>
-        <action class="org.aopbuddy.plugin.action.RunMethodAction" text="Default Run Method">
-            <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="EditorToggleColumnMode" />
+        <action class="org.aopbuddy.plugin.action.RunMethodAction" text="Run Method">
+            <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="EditorToggleColumnMode"/>
+        </action>
+        <action class="org.aopbuddy.plugin.action.WatchMethodAction" text="Watch Method">
+            <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="EditorToggleColumnMode"/>
         </action>
     </actions>
 </idea-plugin>
