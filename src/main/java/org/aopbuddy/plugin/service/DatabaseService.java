@@ -2,7 +2,6 @@ package org.aopbuddy.plugin.service;
 
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
 import org.aopbuddy.plugin.mapper.BaseMapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
@@ -20,14 +19,14 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.function.Function;
 
-@Service(Service.Level.PROJECT)
-public final class DatabaseService {
+@Service(Service.Level.APP)  // 全局应用级服务（IDE启动时初始化，全局唯一）
+public final class DatabaseService{
     private static final Logger LOGGER = Logger.getInstance(DatabaseService.class);
     private SqlSessionFactory sqlSessionFactory = null;
-    private final Project project;
+    private DataSource dataSource; // 新增：持有数据源引用，用于关闭连接池
 
-    public DatabaseService(Project project) {
-        this.project = project;
+
+    public DatabaseService() {
         // 在构造函数中启动线程初始化数据库
         new Thread(this::buildSqlSessionFactory).start();
     }
@@ -41,7 +40,7 @@ public final class DatabaseService {
         String driver = "org.h2.Driver";
         String username = "sa";
         String password = "";
-        DataSource dataSource = new PooledDataSource(driver, url, username, password);
+        this.dataSource = new PooledDataSource(driver, url, username, password);
         LOGGER.info("H2 DB URL: " + url);
         // 事务管理器配置 (JDBC 类型)
         TransactionFactory transactionFactory = new JdbcTransactionFactory();
@@ -71,13 +70,12 @@ public final class DatabaseService {
                         configuration.getSqlFragments()
                 );
                 mapperBuilder.parse();
-                System.out.println("成功加载XML映射文件: mapper/CallMapper.xml");
+                LOGGER.info("成功加载XML映射文件: mapper/CallMapper.xml");
             } else {
-                System.err.println("未找到映射文件: mapper/CallMapper.xml");
+                LOGGER.error("未找到映射文件: mapper/CallMapper.xml");
             }
         } catch (Exception e) {
-            System.err.println("加载XML映射文件失败: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("加载XML映射文件失败: mapper/CallMapper.xml", e);
         }
 
 

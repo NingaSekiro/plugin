@@ -64,11 +64,11 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
         setFirstComponent(getGroovyConsolePanel());
         setSecondComponent(getJvmResultInfoPanel());
-        project.getMessageBus().connect().subscribe(
+        project.getMessageBus().connect(this).subscribe(
                 ToolWindowUpdateNotifier.GROOVY_CONSOLE_CHANGED_TOPIC,
                 (ToolWindowUpdateNotifier) this.groovyEditorView.getGroovyEditor()::setText);
         // 考虑java bean的监听 替代
-        project.getMessageBus().connect().subscribe(
+        project.getMessageBus().connect(this).subscribe(
                 ToolWindowUpdateNotifier.ATTACH_STATUS_CHANGED_TOPIC, (ToolWindowUpdateNotifier) message -> {
                     boolean status = Boolean.parseBoolean(message);
                     if (!status) {

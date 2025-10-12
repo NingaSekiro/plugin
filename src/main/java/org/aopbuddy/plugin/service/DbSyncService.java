@@ -6,6 +6,7 @@ import com.aopbuddy.record.CallRecordDo;
 import com.aopbuddy.record.MethodChain;
 import com.aopbuddy.record.MethodChainKey;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -28,7 +29,7 @@ public final class DbSyncService {
     @Setter
     private boolean isRunning = false;
     private Project project;
-    private final DatabaseService databaseService;
+    private final DatabaseService databaseService = ApplicationManager.getApplication().getService(DatabaseService.class);
     private final JvmService jvmService;
     private long startTime = 0;
 
@@ -37,7 +38,6 @@ public final class DbSyncService {
 
     public DbSyncService(Project project) {
         this.project = project;
-        databaseService = project.getService(DatabaseService.class);
         jvmService = project.getService(JvmService.class);
     }
     // client 0->server0-?->
@@ -81,6 +81,9 @@ public final class DbSyncService {
                                 .flatMap(m -> m.getCallRecordDos().stream()
                                         .flatMap(c -> c.getCallRecords().stream()))
                                 .collect(Collectors.toList());
+                        if (callRecords.isEmpty()) {
+                            return null;
+                        }
                         mapper.insertBatchCallRecords(callRecords, tableName);
                         startTime = MethodChainUtil.getMaxTime(map);
                         LOGGER.info(String.format("insert table %s success", tableName));
