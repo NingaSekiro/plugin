@@ -11,33 +11,37 @@ public class RecordModel {
     private long endTime;
     private String listenerClassName;
     private String listenerMethodName;
-    
+
     // 依赖服务
     private ConsoleStateService consoleStateService;
     private DbSyncService dbSyncService;
-    
+
     public RecordModel(ConsoleStateService consoleStateService, DbSyncService dbSyncService) {
         this.consoleStateService = consoleStateService;
         this.dbSyncService = dbSyncService;
     }
-    
+
     public void startRecording(String className, String methodName) {
         startTime = System.currentTimeMillis();
         listenerClassName = className.trim();
         listenerMethodName = methodName.trim();
-        dbSyncService.record(listenerClassName,listenerMethodName);
+        dbSyncService.record(listenerClassName, listenerMethodName);
     }
-    
+
     public void stopRecording() {
         endTime = System.currentTimeMillis();
-        dbSyncService.stop(listenerClassName,listenerMethodName);
+        dbSyncService.stop(listenerClassName, listenerMethodName);
+    }
+
+    public boolean isAttached() {
+        return consoleStateService.getIp() != null;
     }
 
     public String getFormattedStartTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         return dateFormat.format(new Date(startTime));
     }
-    
+
     public String getRecordingDuration() {
         long duration = endTime - startTime;
         long minutes = duration / 60000;

@@ -36,6 +36,9 @@ public final class JvmService {
         // 构造进程信息列表
         for (VirtualMachineDescriptor vm : vms) {
             String displayName = vm.displayName();
+            if (displayName.contains("GradleDaemon")) {
+                continue;
+            }
             String id = vm.id();
             // 格式化显示信息：PID - 进程名
             String displayText = id + " - " + (displayName.isEmpty() ? "Unknown" : displayName);
@@ -72,6 +75,9 @@ public final class JvmService {
                 .build();
         try {
             Response response = okHttpClient.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                return new ArrayList<>();
+            }
             return JsonUtil.parse(response.body().string(), new TypeReference<>() {
             });
         } catch (Throwable e) {
@@ -81,6 +87,9 @@ public final class JvmService {
     }
 
     public String eval(String script) {
+        if (consoleStateService.getIp() == null) {
+            return null;
+        }
         EvalRequest evalRequest = new EvalRequest(consoleStateService.getServerName(), consoleStateService.getSelectedClassloader(), script);
         OkHttpClient okHttpClient = OkHttpClientUtils.getInstance();
         Request request = new Request.Builder()

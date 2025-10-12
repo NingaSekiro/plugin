@@ -1,9 +1,7 @@
 package org.aopbuddy.plugin.infra;
 
 import io.netty.handler.timeout.ReadTimeoutException;
-import okhttp3.Interceptor;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.apache.http.conn.ConnectTimeoutException;
 
 /**
@@ -44,10 +42,22 @@ public class OkHttpRetryInterceptor implements Interceptor {
                 return retry(chain, retryCet + 1);
             }
             // interceptor 返回 null 会报 IllegalStateException 异常
-            return new Response.Builder().build();
+            return new Response.Builder()
+                    .code(504) // Gateway Timeout
+                    .protocol(Protocol.HTTP_1_1)
+                    .message("Gateway Timeout")
+                    .request(request)
+                    .body(ResponseBody.create("timeout", MediaType.parse("text/plain")))
+                    .build();
         } catch (Exception e2) {
             // interceptor 返回 null 会报 IllegalStateException 异常
-            return new Response.Builder().build();
+            return new Response.Builder()
+                    .code(500) // Internal Server Error
+                    .protocol(Protocol.HTTP_1_1)
+                    .message("Internal Server Error")
+                    .request(request)
+                    .body(ResponseBody.create("Internal Server Error", MediaType.parse("text/plain")))
+                    .build();
         }
         return response;
     }

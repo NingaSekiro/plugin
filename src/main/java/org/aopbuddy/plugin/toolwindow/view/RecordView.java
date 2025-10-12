@@ -31,6 +31,11 @@ public class RecordView {
         button.setPreferredSize(new Dimension(30, 30));
         button.addActionListener(e -> {
             if (recordButton.isSelected()) {
+                if (!recordModel.isAttached()) {
+                    JOptionPane.showMessageDialog(null, "请先连接到目标服务器", "警告", JOptionPane.WARNING_MESSAGE);
+                    recordButton.setSelected(false);
+                    return;
+                }
                 handleStartRecording();
             } else {
                 handleStopRecording();

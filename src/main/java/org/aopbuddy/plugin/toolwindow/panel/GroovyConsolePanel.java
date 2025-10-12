@@ -50,9 +50,8 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
         this.jvmService = project.getService(JvmService.class);
         this.dbSyncService = project.getService(DbSyncService.class);
         this.heartBeatService = project.getService(HeartBeatService.class);
+
         this.groovyEditorView = new GroovyEditorView(project);
-
-
         this.runResultView = new RunResultView(project, runResultModel);
         this.recordModel = new RecordModel(consoleStateService, dbSyncService);
         this.recordView = new RecordView(recordModel, runResultModel);
@@ -78,6 +77,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
                         this.recordView.getRecordButton().setSelected(false);
                         this.classloaderModel.setClassloaders(new ArrayList<>());
                         this.classloaderModel.setSelectedItem(null);
+                        consoleStateService.setIp(null);
                     } else {
                         this.updateClassloaderComboBox();
                     }
@@ -111,10 +111,10 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
         toolbarPanel.setPreferredSize(new Dimension(-1, 30));
         toolbarPanel.setLayout(new BoxLayout(toolbarPanel, 0));
         toolbarPanel.setBorder(new CustomLineBorder(JBUI.insetsBottom(1)));
-        toolbarPanel.add(Box.createHorizontalGlue());
-        toolbarPanel.add(Box.createHorizontalStrut(5));
-        // 结果面板
         toolbarPanel.add(createClearActionButton());
+        toolbarPanel.add(Box.createHorizontalGlue());
+//        toolbarPanel.add(Box.createHorizontalStrut(5));
+        // 结果面板
         JBTabbedPane groovyTabbedPane = new JBTabbedPane();
         groovyTabbedPane.setBorder(new CustomLineBorder(JBUI.insetsTop(1)));
         groovyTabbedPane.add("执行方法结果", this.runResultView.getRunStatusEditor());
@@ -128,6 +128,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
     private void updateClassloaderComboBox() {
         List<String> classloaders = jvmService.getClassloaders();
+        classloaders.removeIf(classloader -> classloader.contains("bytebuddy"));
         classloaderModel.setClassloaders(classloaders);
         if (!classloaders.isEmpty()) {
             classloaderModel.setSelectedItem(classloaders.get(0));

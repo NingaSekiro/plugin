@@ -18,7 +18,7 @@ public class AttachView implements StatusChangeListener<Boolean> {
 
     public AttachView(AttachModel model) {
         this.attachModel = model;
-        attachButton = new JButton("1.未连接VJM");
+        attachButton = new JButton("1.未连接JVM");
         attachButton.setContentAreaFilled(false);
         attachButton.setPreferredSize(new Dimension(200, 30));
         attachButton.addActionListener(e -> {
@@ -32,6 +32,6 @@ public class AttachView implements StatusChangeListener<Boolean> {
     @Override
     public void onStatusChanged(Boolean newStatus) {
         attachButton.setEnabled(!newStatus);
-        attachButton.setText(newStatus ? "1.已连接VJM" : "1.未连接VJM");
+        attachButton.setText(newStatus ? "1.已连接JVM" : "1.未连接JVM");
     }
 }

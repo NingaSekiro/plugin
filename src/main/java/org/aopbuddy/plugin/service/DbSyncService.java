@@ -49,9 +49,6 @@ public final class DbSyncService {
 
     // 定时任务 - 实际的同步逻辑
     public void record(String className, String methodName) {
-        if (isRunning) {
-            return;
-        }
         isRunning = true;
         String tableName = project.getName() + "_" + LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm"));
