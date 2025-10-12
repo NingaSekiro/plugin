@@ -9,5 +9,5 @@ public interface ToolWindowUpdateNotifier {
     @Topic.ProjectLevel
     Topic<ToolWindowUpdateNotifier> ATTACH_STATUS_CHANGED_TOPIC = Topic.create("attach status changed", ToolWindowUpdateNotifier.class);
 
-    void onUpdate(String newContent);  // 自定义事件方法，传递数据
+    void onUpdate(String newContent);
 }

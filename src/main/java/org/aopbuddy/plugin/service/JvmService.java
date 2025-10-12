@@ -4,11 +4,12 @@ import com.aopbuddy.groovy.EvalRequest;
 import com.aopbuddy.infrastructure.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.intellij.openapi.components.Service;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.sun.tools.attach.*;
 import okhttp3.*;
 import org.aopbuddy.plugin.infra.model.HttpServer;
-import org.aopbuddy.plugin.infra.util.OkClientUtil;
+import org.aopbuddy.plugin.infra.util.OkHttpClientUtils;
 import org.aopbuddy.plugin.infra.util.PluginPathUtil;
 
 import java.io.File;
@@ -18,6 +19,8 @@ import java.util.List;
 
 @Service(Service.Level.PROJECT)
 public final class JvmService {
+    private static final Logger LOGGER = Logger.getInstance(JvmService.class);
+
     private final Project project;
 
     private final ConsoleStateService consoleStateService;
@@ -55,19 +58,14 @@ public final class JvmService {
                 }
             }
             vm.detach();
-        } catch (AttachNotSupportedException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (AgentInitializationException e) {
-            throw new RuntimeException(e);
-        } catch (AgentLoadException e) {
+        } catch (Throwable e) {
+            LOGGER.error("attach error", e);
             throw new RuntimeException(e);
         }
     }
 
     public List<String> getClassloaders() {
-        OkHttpClient okHttpClient = OkClientUtil.getOkHttpClient(5000, 3);
+        OkHttpClient okHttpClient = OkHttpClientUtils.getInstance();
         Request request = new Request.Builder()
                 .url("http://" + consoleStateService.getIp() + ":" + consoleStateService.getPort() + "/classloaders")
                 .method("GET", null)
@@ -77,13 +75,14 @@ public final class JvmService {
             return JsonUtil.parse(response.body().string(), new TypeReference<>() {
             });
         } catch (Throwable e) {
+            LOGGER.error("getClassloaders error", e);
             return new ArrayList<>();
         }
     }
 
     public String eval(String script) {
         EvalRequest evalRequest = new EvalRequest(consoleStateService.getServerName(), consoleStateService.getSelectedClassloader(), script);
-        OkHttpClient okHttpClient = OkClientUtil.getOkHttpClient(300000, 3);
+        OkHttpClient okHttpClient = OkHttpClientUtils.getInstance();
         Request request = new Request.Builder()
                 .url("http://" + consoleStateService.getIp() + ":" + consoleStateService.getPort() + "/eval")
                 .method("POST", RequestBody.create(JsonUtil.toJson(evalRequest), MediaType.parse("application/json")))

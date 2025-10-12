@@ -36,11 +36,6 @@ public class MyEditorTextField extends EditorTextField {
         return editor;
     }
 
-//    public void repaint(long tm, int x, int y, int width, int height) {
-//        super.repaint(tm, x, y, width, height);
-//        if (getEditor() instanceof EditorEx)
-//            initOneLineModePre((EditorEx) getEditor());
-//    }
 
     public void setBorder(Border border) {
         super.setBorder(JBUI.Borders.empty());

@@ -30,7 +30,6 @@ public final class DbSyncService {
     private Project project;
     private final DatabaseService databaseService;
     private final JvmService jvmService;
-    private final ConsoleStateService consoleStateService;
     private long startTime = 0;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1);
@@ -40,13 +39,16 @@ public final class DbSyncService {
         this.project = project;
         databaseService = project.getService(DatabaseService.class);
         jvmService = project.getService(JvmService.class);
-        consoleStateService = project.getService(ConsoleStateService.class);
     }
     // client 0->server0-?->
     // client ?->server?-??
 
+    public void reInit() {
+        isRunning = false;
+    }
+
     // 定时任务 - 实际的同步逻辑
-    public void record() {
+    public void record(String className, String methodName) {
         if (isRunning) {
             return;
         }
@@ -59,8 +61,8 @@ public final class DbSyncService {
             startTime = Long.parseLong(tmp);
             String addListenerResult = jvmService.eval(
                     String.format("addListener('%s','%s')",
-                            consoleStateService.getListenerClassName(),
-                            consoleStateService.getListenerMethodName()));
+                            className,
+                            methodName));
             LOGGER.info(String.format("register trace listener result: %s", addListenerResult));
             databaseService.execute(CallRecordMapper.class, mapper -> {
                 mapper.createTableWithName(tableName);
@@ -96,13 +98,13 @@ public final class DbSyncService {
         });
     }
 
-    public void stop() {
+    public void stop(String className, String methodName) {
         isRunning = false;
         // 停止录制
         String eval = jvmService.eval(
                 String.format("deleteListener('%s','%s')",
-                        consoleStateService.getListenerClassName(),
-                        consoleStateService.getListenerMethodName()));
+                        className,
+                        methodName));
         LOGGER.info(String.format("delete trace listener result: %s", eval));
         LOGGER.info("stop sync db");
     }

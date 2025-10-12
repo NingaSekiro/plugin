@@ -27,10 +27,8 @@ public class HintComboBox<E> extends ComboBox<E> {
             @Override
             public Component getListCellRendererComponent(
                     JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
                 // 如果value是null，显示提示文字
                 String displayText = (value == null) ? hint : value.toString();
-
                 return super.getListCellRendererComponent(list, displayText, index, isSelected, cellHasFocus);
             }
         });

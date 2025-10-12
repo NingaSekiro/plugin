@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import lombok.Getter;
 import lombok.Setter;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
+import org.aopbuddy.plugin.infra.util.ThreadUtil;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -33,18 +34,14 @@ public final class HeartBeatService {
             while (isRunning) {
                 List<String> classloaders;
                 classloaders = jvmService.getClassloaders();
-                boolean attached = classloaders.size() > 0;
+                boolean attached = !classloaders.isEmpty();
                 if (attached != status) {
                     status = attached;
                     ToolWindowUpdateNotifier publisher = project.getMessageBus()
                             .syncPublisher(ToolWindowUpdateNotifier.ATTACH_STATUS_CHANGED_TOPIC);
-                    publisher.onUpdate(String.valueOf(status));
+                    publisher.onUpdate(Boolean.toString(status));
                 }
-                try {
-                    Thread.sleep(4000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                ThreadUtil.sleep(4000);
             }
         });
     }
