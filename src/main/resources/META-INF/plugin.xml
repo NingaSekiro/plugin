@@ -29,6 +29,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="AopPlugin.Tool" factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
                     doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
+        <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
     </extensions>
     <actions>
         <action class="org.aopbuddy.plugin.action.RunMethodAction" text="Run Method">

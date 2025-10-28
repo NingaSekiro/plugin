@@ -12,7 +12,7 @@
         <result column="TARGET" jdbcType="VARCHAR" property="target"/>
         <result column="TIMESTAMP" jdbcType="TIMESTAMP" property="timestamp"/>
     </resultMap>
-    <insert id="insertBatchCallRecords" parameterType="list">
+    <insert id="insertBatchCallRecords">
         INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target)
         VALUES
         <foreach collection="list" item="record" separator=",">
@@ -20,7 +20,7 @@
         </foreach>
     </insert>
 
-    <select id="selectByIdGreaterThan" parameterType="long" resultMap="BaseResultMap">
+    <select id="selectByIdGreaterThan" resultMap="BaseResultMap">
         SELECT id,
                call_chain_id,
                method,
@@ -37,7 +37,7 @@
         FROM ${tableName}
     </select>
 
-    <select id="selectByMethods" parameterType="list" resultMap="BaseResultMap">
+    <select id="selectByMethods" resultMap="BaseResultMap">
         SELECT id,
         call_chain_id,
         method,
@@ -52,9 +52,26 @@
         </foreach>
     </select>
 
+    <select id="selectMaxIdMethodsPerChain" resultMap="BaseResultMap">
+        SELECT call_chain_id, method
+        FROM ${tableName} t1
+        WHERE id = (SELECT MAX(id)
+                    FROM ${tableName} t2
+                    WHERE t2.call_chain_id = t1.call_chain_id)
+    </select>
+
+    <select id="selectMethodsByChainId" resultMap="BaseResultMap">
+        SELECT id,
+               call_chain_id,
+               method,
+               args
+        FROM ${tableName}
+        WHERE call_chain_id = #{chainId}
+    </select>
+
 
     <!-- 创建 CallRecord 表 -->
-    <update id="createTableWithName" parameterType="string">
+    <update id="createTableWithName">
         CREATE TABLE IF NOT EXISTS ${tableName} (
         id BIGINT PRIMARY KEY AUTO_INCREMENT,
         call_chain_id BIGINT,
@@ -70,7 +87,7 @@
     </update>
 
     <!-- 删除 CallRecord 表 -->
-    <update id="dropTableWithName" parameterType="string">
+    <update id="dropTableWithName">
         DROP TABLE IF EXISTS ${tableName}
     </update>
 

@@ -1,5 +1,6 @@
 package org.aopbuddy.plugin.infra.util;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
@@ -32,5 +33,11 @@ public class PluginPathUtil {
         
         // 4. 转换为本地文件路径
         return pluginPath.toFile();
+    }
+
+    public static Path getPluginPath() {
+        IdeaPluginDescriptor pluginDescriptor = PluginManagerCore.getPlugin(PluginId.getId("org.aopbuddy.plugin"));
+        Path pluginPath = pluginDescriptor.getPluginPath();
+        return pluginPath;
     }
 }

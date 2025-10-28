@@ -17,6 +17,9 @@ public interface CallRecordMapper extends BaseMapper {
 
     List<CallRecordDo> selectByMethods(@Param("list") List<String> methods, @Param("tableName") String tableName);
 
+    List<CallRecordDo> selectMaxIdMethodsPerChain(@Param("tableName") String tableName);
+
+    List<CallRecordDo> selectMethodsByChainId(@Param("chainId") int chainId, @Param("tableName") String tableName);
 
     void createTableWithName(@Param("tableName") String tableName);
 
@@ -24,5 +27,6 @@ public interface CallRecordMapper extends BaseMapper {
 
     //    查出所有表名
     List<String> selectAllTableNames();
+
 }
 

@@ -35,10 +35,13 @@ dependencies {
     implementation("com.h2database:h2:2.3.232")
     // junit5
 
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0-M1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M1")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
+    testCompileOnly("org.projectlombok:lombok:1.18.30")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
 }
 
 tasks {
