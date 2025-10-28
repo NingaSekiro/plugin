@@ -2,7 +2,6 @@ package org.aopbuddy.plugin.toolwindow.view;
 
 import lombok.Getter;
 import org.aopbuddy.plugin.infra.model.HttpServer;
-import org.aopbuddy.plugin.toolwindow.StatusChangeListener;
 import org.aopbuddy.plugin.toolwindow.component.JvmProcessSelectorDialog;
 import org.aopbuddy.plugin.toolwindow.model.AttachModel;
 
@@ -10,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-public class AttachView implements StatusChangeListener<Boolean> {
+public class AttachView {
     @Getter
     private JButton attachButton;
 
@@ -21,17 +20,14 @@ public class AttachView implements StatusChangeListener<Boolean> {
         attachButton = new JButton("1.未连接JVM");
         attachButton.setContentAreaFilled(false);
         attachButton.setPreferredSize(new Dimension(200, 30));
+        attachButton.setModel(attachModel);
         attachButton.addActionListener(e -> {
             List<String> jvms = attachModel.getJvms();
             HttpServer httpServer = JvmProcessSelectorDialog.showAndGetSync(jvms);
             attachModel.startHeartBeat(httpServer);
         });
-        attachModel.addStatusChangeListener(this);
-    }
-
-    @Override
-    public void onStatusChanged(Boolean newStatus) {
-        attachButton.setEnabled(!newStatus);
-        attachButton.setText(newStatus ? "1.已连接JVM" : "1.未连接JVM");
+        attachModel.addChangeListener(e -> {
+            attachButton.setText(attachModel.isAttached() ? "2.已连接JVM" : "1.未连接JVM");
+        });
     }
 }

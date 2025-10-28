@@ -1,19 +1,22 @@
 package org.aopbuddy.plugin.toolwindow.model;
 
+import lombok.Getter;
 import org.aopbuddy.plugin.infra.model.HttpServer;
 import org.aopbuddy.plugin.service.ConsoleStateService;
 import org.aopbuddy.plugin.service.HeartBeatService;
 import org.aopbuddy.plugin.service.JvmService;
 import org.aopbuddy.plugin.toolwindow.StatusChangeListener;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AttachModel {
+public class AttachModel extends DefaultButtonModel {
     private final JvmService jvmService;
     private final HeartBeatService heartBeatService;
     private final ConsoleStateService consoleStateService;
     private final List<StatusChangeListener<Boolean>> listeners = new ArrayList<>();
+    @Getter
     private boolean isAttached = false;
 
     public AttachModel(JvmService jvmService, HeartBeatService heartBeatService, ConsoleStateService consoleStateService) {
@@ -46,24 +49,6 @@ public class AttachModel {
             return; // 避免重复通知
         }
         isAttached = status;
-        notifyListeners(); // 通知所有观察者
-    }
-
-
-    // 注册观察者
-    public void addStatusChangeListener(StatusChangeListener<Boolean> listener) {
-        listeners.add(listener);
-    }
-
-    // 移除观察者
-    public void removeStatusChangeListener(StatusChangeListener<Boolean> listener) {
-        listeners.remove(listener);
-    }
-
-    // 通知所有观察者状态变更
-    private void notifyListeners() {
-        for (StatusChangeListener<Boolean> listener : listeners) {
-            listener.onStatusChanged(isAttached);
-        }
+        fireStateChanged();
     }
 }
