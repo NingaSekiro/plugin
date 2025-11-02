@@ -1,7 +1,6 @@
 package org.aopbuddy.plugin.toolwindow.panel;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.OnePixelSplitter;
@@ -21,7 +20,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
+public class GroovyConsolePanel extends OnePixelSplitter {
     private static final Logger LOGGER = Logger.getInstance(GroovyConsolePanel.class);
 
     private final Project project;
@@ -64,11 +63,11 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
         setFirstComponent(getGroovyConsolePanel());
         setSecondComponent(getJvmResultInfoPanel());
-        project.getMessageBus().connect(this).subscribe(
+        project.getMessageBus().connect().subscribe(
                 ToolWindowUpdateNotifier.GROOVY_CONSOLE_CHANGED_TOPIC,
                 (ToolWindowUpdateNotifier) this.groovyEditorView.getGroovyEditor()::setText);
         // 考虑java bean的监听 替代
-        project.getMessageBus().connect(this).subscribe(
+        project.getMessageBus().connect().subscribe(
                 ToolWindowUpdateNotifier.ATTACH_STATUS_CHANGED_TOPIC, (ToolWindowUpdateNotifier) message -> {
                     boolean status = Boolean.parseBoolean(message);
                     if (!status) {
@@ -112,6 +111,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
         toolbarPanel.setLayout(new BoxLayout(toolbarPanel, 0));
         toolbarPanel.setBorder(new CustomLineBorder(JBUI.insetsBottom(1)));
         toolbarPanel.add(createClearActionButton());
+        toolbarPanel.add(createRecordActionButton());
         toolbarPanel.add(Box.createHorizontalGlue());
 //        toolbarPanel.add(Box.createHorizontalStrut(5));
         // 结果面板
@@ -146,5 +146,17 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
             this.runResultModel.setStatus("");
         });
         return clearActionButton;
+    }
+
+    private Component createRecordActionButton() {
+        JButton recordActionButton = new JButton();
+        recordActionButton.setIcon(AllIcons.Actions.GC);
+        recordActionButton.setContentAreaFilled(false);
+        recordActionButton.setToolTipText("录制");
+        recordActionButton.setPreferredSize(new Dimension(30, -1));
+        recordActionButton.addActionListener(e -> {
+            RecordFrame.getInstance(this.project);
+        });
+        return recordActionButton;
     }
 }

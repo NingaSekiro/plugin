@@ -6,32 +6,28 @@ import com.intellij.openapi.application.ApplicationManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import org.aopbuddy.plugin.infra.model.MermaidVo;
-import org.aopbuddy.plugin.infra.util.MermaidConverter;
+import org.aopbuddy.plugin.infra.model.MethodChainVo;
+import org.aopbuddy.plugin.infra.util.HttpRequestUtil;
 import org.aopbuddy.plugin.mapper.CallRecordMapper;
 import org.aopbuddy.plugin.service.DatabaseService;
 
 import java.io.IOException;
 import java.util.List;
 
-public final class MermaidServlet implements RouteHandler {
-
+public class MethodChainsServlet implements RouteHandler {
     private final DatabaseService databaseService;
 
-
-    public MermaidServlet() {
+    public MethodChainsServlet() {
         this.databaseService = ApplicationManager.getApplication().getService(DatabaseService.class);
     }
 
     @Override
     public String handle(QueryStringDecoder queryStringDecoder, FullHttpRequest request, ChannelHandlerContext context) throws IOException {
-        List<CallRecordDo> execute = databaseService.execute(CallRecordMapper.class, mapper -> {
-            List<String> dbNames = mapper.selectAllTableNames();
-            List<CallRecordDo> callRecordDos = mapper.selectMaxIdMethodsPerChain(dbNames.get(0));
-            int callChainId = callRecordDos.get(0).getCallChainId();
-            return mapper.selectMethodsByChainId(callChainId, dbNames.get(0));
+        String record = HttpRequestUtil.getQueryParameter(queryStringDecoder, "record");
+        List<CallRecordDo> callRecordDos = databaseService.execute(CallRecordMapper.class, mapper -> {
+            return mapper.selectMaxIdMethodsPerChain(record);
         });
-        String mermaidCode = MermaidConverter.convertToMermaid(execute);
-        return JsonUtil.toJson(new MermaidVo(mermaidCode));
+        List<MethodChainVo> methodChainVos = callRecordDos.stream().map(MethodChainVo::toMethodChain).toList();
+        return JsonUtil.toJson(methodChainVos);
     }
 }

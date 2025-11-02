@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import lombok.Getter;
 import lombok.Setter;
 import org.aopbuddy.plugin.infra.util.ThreadUtil;
 import org.aopbuddy.plugin.mapper.CallRecordMapper;
@@ -26,8 +27,11 @@ import java.util.stream.Collectors;
 public final class DbSyncService {
     private static final Logger LOGGER = Logger.getInstance(DbSyncService.class);
 
+    @Getter
     @Setter
     private boolean isRunning = false;
+    @Getter
+    private String tableName = "";
     private Project project;
     private final DatabaseService databaseService = ApplicationManager.getApplication().getService(DatabaseService.class);
     private final JvmService jvmService;
@@ -48,18 +52,21 @@ public final class DbSyncService {
     }
 
     // 定时任务 - 实际的同步逻辑
-    public void record(String className, String methodName) {
+    public void record(List<String> classNames, String methodName) {
         isRunning = true;
-        String tableName = project.getName() + "_" + LocalDateTime.now().format(
+        tableName = project.getName() + "_" + LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm"));
         executor.submit(() -> {
             // 开始录制
             String tmp = jvmService.eval("return System.currentTimeMillis()");
             startTime = Long.parseLong(tmp);
-            String addListenerResult = jvmService.eval(
-                    String.format("addListener('%s','%s')",
-                            className,
-                            methodName));
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String className : classNames) {
+                stringBuilder.append(String.format("addListener('%s..*','%s')\n",
+                        className,
+                        methodName));
+            }
+            String addListenerResult = jvmService.eval(stringBuilder.toString());
             LOGGER.info(String.format("register trace listener result: %s", addListenerResult));
             databaseService.execute(CallRecordMapper.class, mapper -> {
                 mapper.createTableWithName(tableName);
@@ -98,13 +105,16 @@ public final class DbSyncService {
         });
     }
 
-    public void stop(String className, String methodName) {
+    public void stop(List<String> classNames, String methodName) {
         isRunning = false;
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String className : classNames) {
+            stringBuilder.append(String.format("deleteListener('%s..*','%s')\n",
+                    className,
+                    methodName));
+        }
         // 停止录制
-        String eval = jvmService.eval(
-                String.format("deleteListener('%s','%s')",
-                        className,
-                        methodName));
+        String eval = jvmService.eval(stringBuilder.toString());
         LOGGER.info(String.format("delete trace listener result: %s", eval));
         LOGGER.info("stop sync db");
     }

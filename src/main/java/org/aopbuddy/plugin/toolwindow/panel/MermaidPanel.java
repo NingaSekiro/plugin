@@ -18,13 +18,13 @@ public class MermaidPanel {
 
     public JComponent getMermaidPanel() {
         // 创建浏览器实例
-        JBCefBrowser browser = new JBCefBrowser();
-        browser.loadURL(getPath());
-        return browser.getComponent();
+        JBCefBrowser jbCefBrowser = new JBCefBrowser();
+        jbCefBrowser.loadURL(getPath());
+        return jbCefBrowser.getComponent();
 
     }
 
-    public static String getPath() {
-        return "http://localhost:" + BuiltInServerOptions.getInstance().getEffectiveBuiltInServerPort() + "/api/aopPlugin/index.html";
+    private String getPath() {
+        return "http://localhost:" + BuiltInServerOptions.getInstance().getEffectiveBuiltInServerPort() + "/api/aopPlugin/index.html" + "?projectId=" + project.getLocationHash();
     }
 }

@@ -25,12 +25,12 @@ public class RecordModel {
         startTime = System.currentTimeMillis();
         listenerClassName = className.trim();
         listenerMethodName = methodName.trim();
-        dbSyncService.record(listenerClassName, listenerMethodName);
+//        dbSyncService.record(listenerClassName, listenerMethodName);
     }
 
     public void stopRecording() {
         endTime = System.currentTimeMillis();
-        dbSyncService.stop(listenerClassName, listenerMethodName);
+//        dbSyncService.stop(listenerClassName, listenerMethodName);
     }
 
     public boolean isAttached() {

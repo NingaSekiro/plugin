@@ -5,17 +5,14 @@ import org.aopbuddy.plugin.infra.model.HttpServer;
 import org.aopbuddy.plugin.service.ConsoleStateService;
 import org.aopbuddy.plugin.service.HeartBeatService;
 import org.aopbuddy.plugin.service.JvmService;
-import org.aopbuddy.plugin.toolwindow.StatusChangeListener;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class AttachModel extends DefaultButtonModel {
     private final JvmService jvmService;
     private final HeartBeatService heartBeatService;
     private final ConsoleStateService consoleStateService;
-    private final List<StatusChangeListener<Boolean>> listeners = new ArrayList<>();
     @Getter
     private boolean isAttached = false;
 

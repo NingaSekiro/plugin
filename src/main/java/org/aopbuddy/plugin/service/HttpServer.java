@@ -4,9 +4,9 @@ import com.intellij.openapi.util.io.BufferExposingByteArrayOutputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import org.aopbuddy.plugin.servlet.MermaidServlet;
-import org.aopbuddy.plugin.servlet.RouteHandler;
+import org.aopbuddy.plugin.servlet.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.ide.RestService;
@@ -22,7 +22,11 @@ public class HttpServer extends RestService {
     public Map<String, RouteHandler> routeHandlerMap = new HashMap<>();
 
     public HttpServer() {
+        this.routeHandlerMap.put("methodRecords", new MethodRecordsServlet());
+        this.routeHandlerMap.put("methodChains", new MethodChainsServlet());
         this.routeHandlerMap.put("mermaid", new MermaidServlet());
+        this.routeHandlerMap.put("record", new RecordServlet());
+        this.routeHandlerMap.put("packageNames", new PackageNameServlet());
     }
 
     @Nullable
@@ -63,5 +67,15 @@ public class HttpServer extends RestService {
     @Override
     protected String getServiceName() {
         return "aopPlugin";
+    }
+
+    @Override
+    protected boolean isHostTrusted(@NotNull FullHttpRequest request) {
+        return true;
+    }
+
+    @Override
+    protected boolean isMethodSupported(HttpMethod method) {
+        return method == HttpMethod.GET || method == HttpMethod.POST;
     }
 }
