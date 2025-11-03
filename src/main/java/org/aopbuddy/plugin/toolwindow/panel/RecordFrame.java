@@ -13,6 +13,9 @@ public class RecordFrame extends JFrame {
         if (instance == null) {
             instance = new RecordFrame(project);
         }
+        instance.setVisible(true);
+        instance.setAlwaysOnTop(true);
+        instance.setAlwaysOnTop(false);
         return instance;
     }
     private RecordFrame(Project project) {

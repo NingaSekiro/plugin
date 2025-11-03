@@ -7,7 +7,6 @@ import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.aopbuddy.plugin.toolwindow.panel.GroovyConsolePanel;
-import org.aopbuddy.plugin.toolwindow.panel.MermaidPanel;
 import org.jetbrains.annotations.NotNull;
 
 public class CodeExecutorToolWindowFactory implements ToolWindowFactory {
@@ -18,11 +17,9 @@ public class CodeExecutorToolWindowFactory implements ToolWindowFactory {
         JBTabbedPane tabbedPane = new JBTabbedPane();
 
         GroovyConsolePanel mainPanel = new GroovyConsolePanel(project);
-        MermaidPanel mermaidPanel = new MermaidPanel(project);
 
         // 添加面板到选项卡
         tabbedPane.addTab("Groovy控制台", mainPanel);
-        tabbedPane.addTab("Mermaid", mermaidPanel.getMermaidPanel());
 
         // 将面板添加到工具窗口
         ContentFactory contentFactory = ContentFactory.getInstance();

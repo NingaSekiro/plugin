@@ -29,4 +29,17 @@ class MermaidConverterTest {
         assertNotNull(result);
         System.out.println(result);
     }
+
+    @Test
+    void test_simplifiedMethod() {
+        // 准备测试数据
+        String methodDescription = "public com.example.demo.controller.Model com.example.demo.controller.DemoController1.middle(java.lang.Integer)";
+
+        // 执行转换
+        MermaidConverter.SimplifiedMethod simplifiedMethod = MermaidConverter.simplifyMethod(methodDescription);
+
+        // 验证结果
+        assertNotNull(simplifiedMethod);
+        System.out.println(simplifiedMethod);
+    }
 }

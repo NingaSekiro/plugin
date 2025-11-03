@@ -40,17 +40,4 @@ public class JavaPackageCollector {
                     .collect(Collectors.toSet());
         });
     }
-
-    public static void main(String[] args) {
-        List<String> javaPackages = new ArrayList<>();
-        javaPackages.add("com.example");
-        javaPackages.add("com.example.subpackage");
-        javaPackages.add("com.other");
-        Set<String> collect = javaPackages.stream()
-                .filter(pkg -> javaPackages.stream()
-                        .noneMatch(otherPkg -> !pkg.equals(otherPkg) && pkg.startsWith(otherPkg + "."))
-                )
-                .collect(Collectors.toSet());
-        System.out.println(collect);
-    }
 }

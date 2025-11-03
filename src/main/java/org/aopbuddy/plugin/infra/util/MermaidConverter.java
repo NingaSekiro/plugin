@@ -37,12 +37,12 @@ public class MermaidConverter {
                 if (caller.equals(simplifiedMethod.getSimpleTargetClassName())) {
                     // 同一类的调用，不激活和去激活
                     methodCallBuilder.append(String.format("    %s->>%s: %s\n", 
-                        caller, simplifiedMethod.getSimpleTargetClassName(), call.getId() + "." + simplifiedMethod.getMethodName()));
+                        caller, simplifiedMethod.getSimpleTargetClassName(), call.getId() + "-" + simplifiedMethod.getMethodName()));
                     callStack.push(simplifiedMethod.getSimpleTargetClassName());
                 } else {
                     // 不同类的调用，激活目标类
                     methodCallBuilder.append(String.format("    %s->>+%s: %s\n", 
-                        caller, simplifiedMethod.getSimpleTargetClassName(), call.getId() + "." + simplifiedMethod.getMethodName()));
+                        caller, simplifiedMethod.getSimpleTargetClassName(), call.getId() + "-" + simplifiedMethod.getMethodName()));
                     callStack.push(simplifiedMethod.getSimpleTargetClassName());
                 }
             } else {
@@ -53,7 +53,7 @@ public class MermaidConverter {
                 } else {
                     callStack.pop();
                     String returnTo = callStack.peek();
-                    methodCallBuilder.append(String.format("    %s-->>-%s: %s\n", caller, returnTo, call.getId() + "."));
+                    methodCallBuilder.append(String.format("    %s-->>-%s: %s\n", caller, returnTo, call.getId() + "-"));
                 }
             }
         }

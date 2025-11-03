@@ -69,6 +69,18 @@
         WHERE call_chain_id = #{chainId}
     </select>
 
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT id,
+               call_chain_id,
+               method,
+               args,
+               return_value,
+               target,
+               timestamp
+        FROM ${tableName}
+        WHERE id = #{id}
+    </select>
+
 
     <!-- 创建 CallRecord 表 -->
     <update id="createTableWithName">

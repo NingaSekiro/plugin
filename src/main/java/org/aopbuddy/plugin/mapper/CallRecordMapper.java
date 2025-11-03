@@ -21,6 +21,8 @@ public interface CallRecordMapper extends BaseMapper {
 
     List<CallRecordDo> selectMethodsByChainId(@Param("chainId") int chainId, @Param("tableName") String tableName);
 
+    CallRecordDo selectById(@Param("id") Long id, @Param("tableName") String tableName);
+
     void createTableWithName(@Param("tableName") String tableName);
 
     void dropTableWithName(@Param("tableName") String tableName);
