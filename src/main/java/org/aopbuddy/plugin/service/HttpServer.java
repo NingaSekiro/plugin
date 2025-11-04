@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import org.aopbuddy.plugin.infra.util.PluginPathUtil;
 import org.aopbuddy.plugin.servlet.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +48,7 @@ public class HttpServer extends RestService {
 
     private void handleStaticResource(ChannelHandlerContext context, FullHttpRequest request, String path) {
         try {
-            Path pathTmp = Path.of("D:\\Vue\\mermaid\\dist\\" + path);
+            Path pathTmp = PluginPathUtil.getPluginPath().resolve(path);
             FileResponses.INSTANCE.sendFile(request, context.channel(), pathTmp, EmptyHttpHeaders.INSTANCE);
         } catch (Exception e) {
             LOG.error("Error handling static resource: " + path, e);

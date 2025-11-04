@@ -73,4 +73,10 @@ tasks {
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
 
+    named<org.jetbrains.intellij.tasks.PrepareSandboxTask>("prepareSandbox") {
+        from("D:/Vue/mermaid/dist") {
+            into(pluginName.get())
+        }
+    }
+
 }

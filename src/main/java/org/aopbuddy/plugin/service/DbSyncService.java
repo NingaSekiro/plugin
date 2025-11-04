@@ -12,6 +12,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import lombok.Getter;
 import lombok.Setter;
+import org.aopbuddy.plugin.infra.util.DatabaseUtils;
 import org.aopbuddy.plugin.infra.util.ThreadUtil;
 import org.aopbuddy.plugin.mapper.CallRecordMapper;
 
@@ -54,7 +55,7 @@ public final class DbSyncService {
     // 定时任务 - 实际的同步逻辑
     public void record(List<String> classNames, String methodName) {
         isRunning = true;
-        tableName = project.getName() + "_" + LocalDateTime.now().format(
+        tableName = DatabaseUtils.safeTableName(project.getName()) + "_" + LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm"));
         executor.submit(() -> {
             // 开始录制
