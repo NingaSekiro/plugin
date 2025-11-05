@@ -10,13 +10,15 @@
         <result column="ARGS" jdbcType="VARCHAR" property="args"/>
         <result column="RETURN_VALUE" jdbcType="VARCHAR" property="returnValue"/>
         <result column="TARGET" jdbcType="VARCHAR" property="target"/>
+        <result column="THREAD_NAME" jdbcType="VARCHAR" property="threadName"/>
         <result column="TIMESTAMP" jdbcType="TIMESTAMP" property="timestamp"/>
     </resultMap>
     <insert id="insertBatchCallRecords">
-        INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target)
+        INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target,thread_name,timestamp)
         VALUES
         <foreach collection="list" item="record" separator=",">
-            (#{record.callChainId},#{record.method}, #{record.args},#{record.returnValue},#{record.target})
+            (#{record.callChainId},#{record.method},
+            #{record.args},#{record.returnValue},#{record.target},#{record.threadName},#{record.timestamp})
         </foreach>
     </insert>
 
@@ -53,9 +55,9 @@
     </select>
 
     <select id="selectMaxIdMethodsPerChain" resultMap="BaseResultMap">
-        SELECT call_chain_id, method
+        SELECT call_chain_id, method,thread_name
         FROM ${tableName} t1
-        WHERE id = (SELECT MAX(id)
+        WHERE id = (SELECT MIN(id)
                     FROM ${tableName} t2
                     WHERE t2.call_chain_id = t1.call_chain_id)
     </select>
@@ -91,11 +93,12 @@
         args TEXT,
         return_value TEXT,
         target TEXT,
+        thread_name VARCHAR(255),
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         <!-- 创建索引以优化查询，索引名也包含表名以避免冲突 -->
-        CREATE INDEX IF NOT EXISTS idx_${tableName}_method ON ${tableName} (method);
+        CREATE INDEX IF NOT EXISTS idx_${tableName}_method ON ${tableName} (call_chain_id);
     </update>
 
     <!-- 删除 CallRecord 表 -->
