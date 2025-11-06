@@ -37,6 +37,7 @@ public class RecordServlet implements RouteHandler {
                     return mapper.selectMaxIdMethodsPerChain(dbSyncService.getTableName());
                 });
                 List<MethodChainVo> methodChainVos = callRecordDos.stream().map(MethodChainVo::toMethodChain).toList();
+                methodChainVos.forEach(methodChainVo -> methodChainVo.setRecord(dbSyncService.getTableName()));
                 return JsonUtil.toJson(methodChainVos);
             } else {
                 dbSyncService.record(config, "*");

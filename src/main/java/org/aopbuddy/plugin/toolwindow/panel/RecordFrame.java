@@ -1,25 +1,18 @@
 package org.aopbuddy.plugin.toolwindow.panel;
 
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
 
-public class RecordFrame extends JFrame {
-    private static RecordFrame instance;
+@Service(Service.Level.PROJECT)
+public final class RecordFrame extends JFrame {
     private final MermaidPanel mermaidPanel;
-    private final Project project;
 
     public static RecordFrame getInstance(Project project) {
-        if (instance == null) {
-            instance = new RecordFrame(project);
-        }
-        instance.setVisible(true);
-        instance.setAlwaysOnTop(true);
-        instance.setAlwaysOnTop(false);
-        return instance;
+        return project.getService(RecordFrame.class);
     }
     private RecordFrame(Project project) {
-        this.project = project;
         this.mermaidPanel = new MermaidPanel(project);
         this.setTitle("录制");
         this.setSize(1500, 800);
@@ -28,6 +21,11 @@ public class RecordFrame extends JFrame {
         this.setAlwaysOnTop(true);
         this.setAlwaysOnTop(false);
         this.add(mermaidPanel.getMermaidPanel());
+    }
+
+    public void showWindow() {
         this.setVisible(true);
+        this.setAlwaysOnTop(true);
+        this.setAlwaysOnTop(false);
     }
 }

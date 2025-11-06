@@ -10,6 +10,8 @@ public class MethodChainVo {
         private String methodChain;
         private Long id;
         private int callChainId;
+        // 供录制时查询用
+        private String record;
 
     public static MethodChainVo toMethodChain(CallRecordDo callRecordDo) {
         MethodChainVo methodChainVo = new MethodChainVo();

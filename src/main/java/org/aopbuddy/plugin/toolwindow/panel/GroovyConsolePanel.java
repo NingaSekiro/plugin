@@ -155,7 +155,8 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         recordActionButton.setToolTipText("录制");
         recordActionButton.setPreferredSize(new Dimension(30, -1));
         recordActionButton.addActionListener(e -> {
-            RecordFrame.getInstance(this.project);
+            RecordFrame instance = RecordFrame.getInstance(this.project);
+            instance.showWindow();
         });
         return recordActionButton;
     }

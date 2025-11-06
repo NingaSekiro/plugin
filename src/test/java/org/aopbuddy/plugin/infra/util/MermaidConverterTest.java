@@ -76,6 +76,22 @@ class MermaidConverterTest {
         System.out.println(result);
     }
 
+    @Test
+    void convertToMermaid_own_3() {
+
+        List<CallRecordDo> methodCalls = Arrays.asList(
+                new CallRecordDo(1L, 1, "public void com.fubukiss.rikky.filter.LoginCheckFilter.doFilter()", "DDD", null, null, null, null),
+                new CallRecordDo(2L, 1, "public boolean com.fubukiss.rikky.filter.LoginCheckFilter.check(java.lang.String[],java.lang.String)", "DDD", null, null, null, null),
+                new CallRecordDo(3L, 1, "public boolean com.fubukiss.rikky.filter.LoginCheckFilter.check(java.lang.String[],java.lang.String)", "null", null, null, null, null),
+                new CallRecordDo(4L, 1, "public void com.fubukiss.rikky.filter.LoginCheckFilter.doFilter()", "null", null, null, null, null)
+                );
+        String result = MermaidConverter.convertToMermaid(methodCalls);
+
+        // 验证结果
+        assertNotNull(result);
+        System.out.println(result);
+    }
+
 
     @Test
     void test_simplifiedMethod() {
