@@ -27,7 +27,7 @@ public class HttpServer extends RestService {
         this.routeHandlerMap.put("methodChains", new MethodChainsServlet());
         this.routeHandlerMap.put("mermaid", new MermaidServlet());
         this.routeHandlerMap.put("record", new RecordServlet());
-        this.routeHandlerMap.put("packageNames", new PackageNameServlet());
+        this.routeHandlerMap.put("packageNames", new InitConfigServlet());
         this.routeHandlerMap.put("methodDetail", new MethodDetailServlet());
     }
 

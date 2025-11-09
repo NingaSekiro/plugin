@@ -106,16 +106,10 @@ public final class DbSyncService {
         });
     }
 
-    public void stop(List<String> classNames, String methodName) {
+    public void stop() {
         isRunning = false;
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String className : classNames) {
-            stringBuilder.append(String.format("deleteListener('%s..*','%s')\n",
-                    className,
-                    methodName));
-        }
         // 停止录制
-        String eval = jvmService.eval(stringBuilder.toString());
+        String eval = jvmService.eval("deleteListener()");
         LOGGER.info(String.format("delete trace listener result: %s", eval));
         LOGGER.info("stop sync db");
     }

@@ -1,8 +1,9 @@
 package org.aopbuddy.plugin.infra.model;
 
 import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.record.MethodChainKey;
+import com.aopbuddy.record.SimplifiedMethod;
 import lombok.Data;
-import org.aopbuddy.plugin.infra.util.MermaidConverter;
 
 @Data
 public class MethodChainVo {
@@ -10,12 +11,10 @@ public class MethodChainVo {
         private String methodChain;
         private Long id;
         private int callChainId;
-        // 供录制时查询用
-        private String record;
 
     public static MethodChainVo toMethodChain(CallRecordDo callRecordDo) {
         MethodChainVo methodChainVo = new MethodChainVo();
-        MermaidConverter.SimplifiedMethod simplifiedMethod = MermaidConverter.simplifyMethod(callRecordDo.getMethod());
+        SimplifiedMethod simplifiedMethod = MethodChainKey.simplifyMethod(callRecordDo.getMethod());
         methodChainVo.setMethodChain(String.format("%s %s %s()",
                 simplifiedMethod.getReturnSimpleClassName(),
                 simplifiedMethod.getSimpleTargetClassName(),

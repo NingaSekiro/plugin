@@ -1,11 +1,14 @@
 package org.aopbuddy.plugin.infra.util;
 
 import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.record.SimplifiedMethod;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+
+import static com.aopbuddy.record.MethodChainKey.simplifyMethod;
 
 /**
  * 将方法调用列表转换为mermaid时序图代码
@@ -67,53 +70,7 @@ public class MermaidConverter {
         return String.format("sequenceDiagram\n%s%s", participantsDefinitions.toString(), methodCallBuilder.toString());
     }
 
-    /**
-     * 简化方法签名
-     *
-     * @param fullMethod 方法签名字符串
-     * @return 简化后的方法信息
-     */
-    public static SimplifiedMethod simplifyMethod(String fullMethod) {
-        String[] parts = fullMethod.split(" ");
-        for (int i = 0; i < parts.length; i++) {
-            if (parts[i].contains("(") && parts[i].contains(")")) {
-                String[] methodParts = parts[i].split("\\(");
-                String[] classNameParts = methodParts[0].split("\\.");
-                String returnSimpleClassName = parts[i - 1].substring(parts[i - 1].lastIndexOf('.') + 1);
-                String simpleTargetClassName = classNameParts[classNameParts.length - 2];
-                String methodName = classNameParts[classNameParts.length - 1] + "()";
-                return new SimplifiedMethod(returnSimpleClassName, simpleTargetClassName, methodName);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 简化后的方法信息数据类
-     */
-    public static class SimplifiedMethod {
-        private final String returnSimpleClassName;
-        private final String simpleTargetClassName;
-        private final String methodName;
-
-        public SimplifiedMethod(String returnSimpleClassName,
-                                String simpleTargetClassName, String methodName) {
-            this.returnSimpleClassName = returnSimpleClassName;
-            this.simpleTargetClassName = simpleTargetClassName;
-            this.methodName = methodName;
-        }
 
 
-        public String getReturnSimpleClassName() {
-            return returnSimpleClassName;
-        }
 
-        public String getSimpleTargetClassName() {
-            return simpleTargetClassName;
-        }
-
-        public String getMethodName() {
-            return methodName;
-        }
-    }
 }

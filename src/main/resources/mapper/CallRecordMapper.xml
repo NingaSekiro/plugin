@@ -55,11 +55,9 @@
     </select>
 
     <select id="selectMaxIdMethodsPerChain" resultMap="BaseResultMap">
-        SELECT call_chain_id, method,thread_name
-        FROM ${tableName} t1
-        WHERE id = (SELECT MIN(id)
-                    FROM ${tableName} t2
-                    WHERE t2.call_chain_id = t1.call_chain_id)
+        SELECT call_chain_id, method, thread_name
+        FROM ${tableName}
+        WHERE thread_name IS NOT NULL
     </select>
 
     <select id="selectMethodsByChainId" resultMap="BaseResultMap">

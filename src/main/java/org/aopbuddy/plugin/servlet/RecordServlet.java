@@ -9,11 +9,13 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import org.aopbuddy.plugin.infra.model.MethodChainVo;
 import org.aopbuddy.plugin.infra.model.RecordRequest;
+import org.aopbuddy.plugin.infra.model.RecordResp;
 import org.aopbuddy.plugin.infra.util.HttpRequestUtil;
 import org.aopbuddy.plugin.infra.util.ProjectUtil;
 import org.aopbuddy.plugin.mapper.CallRecordMapper;
 import org.aopbuddy.plugin.service.DatabaseService;
 import org.aopbuddy.plugin.service.DbSyncService;
+import org.aopbuddy.plugin.service.HeartBeatService;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +29,15 @@ public class RecordServlet implements RouteHandler {
         RecordRequest recordRequest = HttpRequestUtil.parseJsonBody(request, RecordRequest.class);
         Project project = ProjectUtil.getProjectById(recordRequest.getProjectId());
         if (project == null) {
-            return "Project not found";
+            RecordResp recordResp = new RecordResp();
+            recordResp.setCode(-1);
+            return JsonUtil.toJson(recordResp);
+        }
+        HeartBeatService service = project.getService(HeartBeatService.class);
+        if (!service.isStatus()) {
+            RecordResp recordResp = new RecordResp();
+            recordResp.setCode(-1);
+            return JsonUtil.toJson(recordResp);
         }
         dbSyncService = project.getService(DbSyncService.class);
         List<String> config = recordRequest.getConfig();
@@ -37,14 +47,19 @@ public class RecordServlet implements RouteHandler {
                     return mapper.selectMaxIdMethodsPerChain(dbSyncService.getTableName());
                 });
                 List<MethodChainVo> methodChainVos = callRecordDos.stream().map(MethodChainVo::toMethodChain).toList();
-                methodChainVos.forEach(methodChainVo -> methodChainVo.setRecord(dbSyncService.getTableName()));
-                return JsonUtil.toJson(methodChainVos);
+                RecordResp recordResp = new RecordResp();
+                recordResp.setCode(0);
+                recordResp.setMethodChains(methodChainVos);
+                recordResp.setRecord(dbSyncService.getTableName());
+                return JsonUtil.toJson(recordResp);
             } else {
                 dbSyncService.record(config, "*");
             }
         } else {
-            dbSyncService.stop(config, "*");
+            dbSyncService.stop();
         }
-        return "[]";
+        RecordResp recordResp = new RecordResp();
+        recordResp.setCode(0);
+        return JsonUtil.toJson(recordResp);
     }
 }

@@ -1,11 +1,13 @@
 package org.aopbuddy.plugin.infra.util;
 
 import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.record.SimplifiedMethod;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static com.aopbuddy.record.MethodChainKey.simplifyMethod;
 import static org.junit.Assert.assertNotNull;
 
 class MermaidConverterTest {
@@ -99,7 +101,7 @@ class MermaidConverterTest {
         String methodDescription = "public com.example.demo.controller.Model com.example.demo.controller.DemoController1.middle(java.lang.Integer)";
 
         // 执行转换
-        MermaidConverter.SimplifiedMethod simplifiedMethod = MermaidConverter.simplifyMethod(methodDescription);
+        SimplifiedMethod simplifiedMethod = simplifyMethod(methodDescription);
 
         // 验证结果
         assertNotNull(simplifiedMethod);

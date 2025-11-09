@@ -35,7 +35,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
     private final RunResultView runResultView;
     private final RunResultModel runResultModel = new RunResultModel();
     private final RecordModel recordModel;
-    private final RecordView recordView;
     private final AttachView attachView;
     private final AttachModel attachModel;
     private final RunView runView;
@@ -53,7 +52,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         this.groovyEditorView = new GroovyEditorView(project);
         this.runResultView = new RunResultView(project, runResultModel);
         this.recordModel = new RecordModel(consoleStateService, dbSyncService);
-        this.recordView = new RecordView(recordModel, runResultModel);
         this.attachModel = new AttachModel(jvmService, heartBeatService, consoleStateService);
         this.attachView = new AttachView(attachModel);
         this.runModel = new RunModel(jvmService, runResultModel, groovyEditorView);
@@ -73,7 +71,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
                     if (!status) {
                         this.dbSyncService.reInit();
                         this.heartBeatService.setRunning(false);
-                        this.recordView.getRecordButton().setSelected(false);
                         this.classloaderModel.setClassloaders(new ArrayList<>());
                         this.classloaderModel.setSelectedItem(null);
                         consoleStateService.setIp(null);
@@ -94,7 +91,7 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         toolbarPanel.add(this.attachView.getAttachButton());
         toolbarPanel.add(this.classloaderView.getClassloaderComboBox());
         toolbarPanel.add(this.runView.getRunButton());
-        toolbarPanel.add(this.recordView.getRecordButton());
+        toolbarPanel.add(createRecordActionButton());
         toolbarPanel.add(Box.createHorizontalGlue());
         toolbarPanel.add(Box.createHorizontalStrut(5));
         JPanel rootPanel = new JPanel(new BorderLayout());
@@ -111,7 +108,6 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         toolbarPanel.setLayout(new BoxLayout(toolbarPanel, 0));
         toolbarPanel.setBorder(new CustomLineBorder(JBUI.insetsBottom(1)));
         toolbarPanel.add(createClearActionButton());
-        toolbarPanel.add(createRecordActionButton());
         toolbarPanel.add(Box.createHorizontalGlue());
 //        toolbarPanel.add(Box.createHorizontalStrut(5));
         // 结果面板
@@ -136,6 +132,20 @@ public class GroovyConsolePanel extends OnePixelSplitter {
         }
     }
 
+
+    private Component createRecordActionButton() {
+        JButton recordActionButton = new JButton();
+        recordActionButton.setIcon(AllIcons.CodeWithMe.CwmCamOn);
+        recordActionButton.setContentAreaFilled(false);
+        recordActionButton.setToolTipText("录制");
+        recordActionButton.setPreferredSize(new Dimension(30, -1));
+        recordActionButton.addActionListener(e -> {
+            RecordFrame instance = RecordFrame.getInstance(this.project);
+            instance.showWindow();
+        });
+        return recordActionButton;
+    }
+
     private Component createClearActionButton() {
         JButton clearActionButton = new JButton();
         clearActionButton.setIcon(AllIcons.Actions.GC);
@@ -146,18 +156,5 @@ public class GroovyConsolePanel extends OnePixelSplitter {
             this.runResultModel.setStatus("");
         });
         return clearActionButton;
-    }
-
-    private Component createRecordActionButton() {
-        JButton recordActionButton = new JButton();
-        recordActionButton.setIcon(AllIcons.Actions.GC);
-        recordActionButton.setContentAreaFilled(false);
-        recordActionButton.setToolTipText("录制");
-        recordActionButton.setPreferredSize(new Dimension(30, -1));
-        recordActionButton.addActionListener(e -> {
-            RecordFrame instance = RecordFrame.getInstance(this.project);
-            instance.showWindow();
-        });
-        return recordActionButton;
     }
 }
