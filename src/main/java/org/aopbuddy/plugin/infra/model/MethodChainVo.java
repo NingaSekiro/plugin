@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class MethodChainVo {
         private String threadName;
+        private String message;
         private String methodChain;
         private Long id;
         private int callChainId;
@@ -22,6 +23,7 @@ public class MethodChainVo {
         methodChainVo.setId(callRecordDo.getId());
         methodChainVo.setThreadName(callRecordDo.getThreadName());
         methodChainVo.setCallChainId(callRecordDo.getCallChainId());
+        methodChainVo.setMessage(callRecordDo.getMessage());
         return methodChainVo;
     }
 }

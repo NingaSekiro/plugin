@@ -11,14 +11,15 @@
         <result column="RETURN_VALUE" jdbcType="VARCHAR" property="returnValue"/>
         <result column="TARGET" jdbcType="VARCHAR" property="target"/>
         <result column="THREAD_NAME" jdbcType="VARCHAR" property="threadName"/>
+        <result column="MESSAGE" jdbcType="VARCHAR" property="message"/>
         <result column="TIMESTAMP" jdbcType="TIMESTAMP" property="timestamp"/>
     </resultMap>
     <insert id="insertBatchCallRecords">
-        INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target,thread_name,timestamp)
+        INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target,thread_name,message,timestamp)
         VALUES
         <foreach collection="list" item="record" separator=",">
             (#{record.callChainId},#{record.method},
-            #{record.args},#{record.returnValue},#{record.target},#{record.threadName},#{record.timestamp})
+            #{record.args},#{record.returnValue},#{record.target},#{record.threadName},#{record.message},#{record.timestamp})
         </foreach>
     </insert>
 
@@ -55,7 +56,7 @@
     </select>
 
     <select id="selectMaxIdMethodsPerChain" resultMap="BaseResultMap">
-        SELECT call_chain_id, method, thread_name
+        SELECT call_chain_id, method, thread_name, message
         FROM ${tableName}
         WHERE thread_name IS NOT NULL
     </select>
@@ -92,6 +93,7 @@
         return_value TEXT,
         target TEXT,
         thread_name VARCHAR(255),
+        message VARCHAR(255),
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 

@@ -15,7 +15,7 @@ import org.aopbuddy.plugin.service.DatabaseService;
 import java.io.IOException;
 import java.util.List;
 
-public final class MermaidServlet implements RouteHandler {
+public class MermaidServlet implements RouteHandler {
     private final DatabaseService databaseService;
 
 
