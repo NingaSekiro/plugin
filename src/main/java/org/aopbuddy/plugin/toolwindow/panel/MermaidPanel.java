@@ -2,9 +2,14 @@ package org.aopbuddy.plugin.toolwindow.panel;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.jcef.JBCefBrowser;
+import org.aopbuddy.plugin.service.DbSyncService;
 import org.jetbrains.builtInWebServer.BuiltInServerOptions;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class MermaidPanel {
 
@@ -17,10 +22,26 @@ public class MermaidPanel {
     }
 
     public JComponent getMermaidPanel() {
-        // 创建浏览器实例
         JBCefBrowser jbCefBrowser = new JBCefBrowser();
         jbCefBrowser.loadURL(getPath());
-        return jbCefBrowser.getComponent();
+        JComponent component = jbCefBrowser.getComponent();
+        component.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0) {
+                Window window = SwingUtilities.getWindowAncestor(component);
+                if (window != null) {
+                    window.addWindowListener(new WindowAdapter() {
+                        @Override
+                        public void windowClosed(WindowEvent e) {
+                            DbSyncService service = project.getService(DbSyncService.class);
+                            if (service.isRunning()) {
+                                service.stop();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        return component;
 
     }
 
