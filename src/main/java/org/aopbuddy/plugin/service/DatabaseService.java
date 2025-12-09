@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.function.Function;
 
-@Service(Service.Level.APP)  // 全局应用级服务（IDE启动时初始化，全局唯一）
-public final class DatabaseService{
+@Service// 全局应用级服务（IDE启动时初始化，全局唯一）
+public final class DatabaseService {
     private static final Logger LOGGER = Logger.getInstance(DatabaseService.class);
     private SqlSessionFactory sqlSessionFactory = null;
     private DataSource dataSource; // 新增：持有数据源引用，用于关闭连接池
@@ -28,7 +28,9 @@ public final class DatabaseService{
 
     public DatabaseService() {
         // 在构造函数中启动线程初始化数据库
-        new Thread(this::buildSqlSessionFactory).start();
+        Thread t = new Thread(this::buildSqlSessionFactory, "aopbuddy-db-init");
+        t.setContextClassLoader(DatabaseService.class.getClassLoader());
+        t.start();
     }
 
     private void buildSqlSessionFactory() {

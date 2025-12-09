@@ -6,5 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class MermaidVo {
-    private String mermaidCode;
+
+  private TreeNode rootNode;
+
 }

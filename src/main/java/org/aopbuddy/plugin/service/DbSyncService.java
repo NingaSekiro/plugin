@@ -92,7 +92,10 @@ public final class DbSyncService {
                         if (callRecords.isEmpty()) {
                             return null;
                         }
-                        mapper.insertBatchCallRecords(callRecords, tableName);
+                        int i = mapper.insertBatchCallRecords(callRecords, tableName);
+                        if (i != callRecords.size()) {
+                            LOGGER.warn(String.format("insert table %s fail", tableName));
+                        }
                         startTime = MethodChainUtil.getMaxTime(map);
                         LOGGER.info(String.format("insert table %s success", tableName));
                         return null;

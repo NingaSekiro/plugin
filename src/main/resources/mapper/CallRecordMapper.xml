@@ -13,47 +13,21 @@
         <result column="THREAD_NAME" jdbcType="VARCHAR" property="threadName"/>
         <result column="MESSAGE" jdbcType="VARCHAR" property="message"/>
         <result column="TIMESTAMP" jdbcType="TIMESTAMP" property="timestamp"/>
+        <result column="CHILD_IDS" jdbcType="VARCHAR" property="childIds" typeHandler="org.aopbuddy.plugin.infra.mybatis.IntegerListStringTypeHandler"/>
+        <result column="THREAD_LOCAL_METHOD_ID" jdbcType="BIGINT" property="threadLocalMethodId"/>
+        <result column="PATH" jdbcType="VARCHAR" property="path"/>
     </resultMap>
     <insert id="insertBatchCallRecords">
-        INSERT INTO ${tableName} (call_chain_id,method,args,return_value,target,thread_name,message,timestamp)
+        INSERT INTO ${tableName}
+        (call_chain_id,thread_local_method_id,method,args,return_value,target,thread_name,message,timestamp,child_ids,
+        path)
         VALUES
         <foreach collection="list" item="record" separator=",">
-            (#{record.callChainId},#{record.method},
-            #{record.args},#{record.returnValue},#{record.target},#{record.threadName},#{record.message},#{record.timestamp})
+            (#{record.callChainId}, #{record.threadLocalMethodId},#{record.method},
+            #{record.args},#{record.returnValue},#{record.target},#{record.threadName},#{record.message},#{record.timestamp},#{record.childIds,typeHandler=org.aopbuddy.plugin.infra.mybatis.IntegerListStringTypeHandler},#{record.path})
         </foreach>
     </insert>
 
-    <select id="selectByIdGreaterThan" resultMap="BaseResultMap">
-        SELECT id,
-               call_chain_id,
-               method,
-               args,
-               return_value,
-               target,
-               timestamp
-        FROM ${tableName}
-        WHERE id > #{id}
-    </select>
-
-    <select id="selectMaxChainId" resultType="int">
-        SELECT COALESCE(MAX(call_chain_id), -1) AS max
-        FROM ${tableName}
-    </select>
-
-    <select id="selectByMethods" resultMap="BaseResultMap">
-        SELECT id,
-        call_chain_id,
-        method,
-        args,
-        return_value,
-        target,
-        timestamp
-        FROM ${tableName}
-        WHERE method IN
-        <foreach collection="list" item="method" open="(" separator="," close=")">
-            #{method}
-        </foreach>
-    </select>
 
     <select id="selectMaxIdMethodsPerChain" resultMap="BaseResultMap">
         SELECT call_chain_id, method, thread_name, message
@@ -61,13 +35,26 @@
         WHERE thread_name IS NOT NULL
     </select>
 
-    <select id="selectMethodsByChainId" resultMap="BaseResultMap">
-        SELECT id,
-               call_chain_id,
-               method,
-               args
-        FROM ${tableName}
-        WHERE call_chain_id = #{chainId}
+
+  <select id="selectMethodsByChainId" resultMap="BaseResultMap">
+    SELECT id,
+    call_chain_id,
+    thread_local_method_id,
+    method,
+    child_ids
+    FROM ${tableName}
+    WHERE call_chain_id = #{chainId}
+  </select>
+
+    <select id="selectSonThreadLocalIds" resultMap="BaseResultMap">
+      SELECT thread_local_method_id,
+      child_ids
+      FROM ${tableName}
+      WHERE call_chain_id = #{chainId}
+      <foreach collection="idList" item="id"
+        open="AND id IN (" close=")" separator=",">
+        #{id}
+      </foreach>
     </select>
 
     <select id="selectById" resultMap="BaseResultMap">
@@ -88,12 +75,15 @@
         CREATE TABLE IF NOT EXISTS ${tableName} (
         id BIGINT PRIMARY KEY AUTO_INCREMENT,
         call_chain_id BIGINT,
-        method VARCHAR(255),
+        thread_local_method_id BIGINT,
+        method VARCHAR(1024),
         args TEXT,
         return_value TEXT,
         target TEXT,
         thread_name VARCHAR(255),
         message VARCHAR(255),
+        child_ids VARCHAR(1024),
+        path VARCHAR(1024),
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
