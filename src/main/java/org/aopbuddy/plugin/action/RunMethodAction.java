@@ -60,7 +60,7 @@ public class RunMethodAction extends AnAction {
 
             sb.append(simpleClassName).append(" ").append(variableName).append(" = getObject(").append(simpleClassName).append(".class);\n");
             sb.append("//").append(variableName).append(".").append(method.getName()).append("();\n");
-            sb.append("toJson(").append(variableName).append(".").append(method.getName()).append("());");
+            sb.append(variableName).append(".").append(method.getName()).append("();");
         }
 
         return sb.toString();

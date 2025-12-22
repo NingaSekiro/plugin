@@ -29,7 +29,7 @@ intellij {
 
 dependencies {
     implementation(files("D:\\Code\\aopbuddy\\agent-core\\target\\agent-jar-with-dependencies.jar"))
-    implementation("org.aopbuddy:spy-api:1.0")
+    implementation("com.aopbuddy:spy-api:1.0")
     implementation("cn.hutool:hutool-all:5.8.40")
     implementation("org.mybatis:mybatis:3.5.16")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

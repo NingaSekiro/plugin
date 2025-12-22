@@ -6,8 +6,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.sun.tools.attach.*;
+import com.sun.tools.attach.AgentLoadException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 import okhttp3.*;
+import org.aopbuddy.plugin.action.HotswapAction.ClassFilePath;
 import org.aopbuddy.plugin.infra.model.HttpServer;
 import org.aopbuddy.plugin.infra.util.OkHttpClientUtils;
 import org.aopbuddy.plugin.infra.util.PluginPathUtil;
@@ -106,6 +109,26 @@ public final class JvmService {
       Response response = okHttpClient.newCall(request).execute();
       return response.body().string();
     } catch (IOException e) {
+      return null;
+    }
+  }
+
+  public String hotSwap(List<ClassFilePath> classFilePaths) {
+    if (consoleStateService.getIp() == null) {
+      return null;
+    }
+    OkHttpClient okHttpClient = OkHttpClientUtils.getInstance();
+    Request request = new Request.Builder()
+        .url("http://" + consoleStateService.getIp() + ":" + consoleStateService.getPort()
+            + "/hotswap")
+        .method("POST", RequestBody.create(JsonUtil.toJson(classFilePaths),
+            MediaType.parse("application/json")))
+        .build();
+    try {
+      Response response = okHttpClient.newCall(request).execute();
+      return response.body().string();
+    } catch (Throwable e) {
+      LOGGER.error("hotSwap error", e);
       return null;
     }
   }

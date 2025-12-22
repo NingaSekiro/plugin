@@ -1,42 +1,61 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>org.aopbuddy.plugin</id>
+  <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+  <id>org.aopbuddy.plugin</id>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>aopPlugin</name>
+  <!-- Public plugin name should be written in Title Case.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+  <name>aopPlugin</name>
 
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="3082246826@qq.com" url="https://www.yourcompany.com">ccc</vendor>
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor email="3082246826@qq.com" url="https://www.yourcompany.com">ccc</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description><![CDATA[
-    ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+       Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+  <description><![CDATA[
+    AOP Buddy是一个强大的IntelliJ IDEA插件，专注于Java应用程序的运行时分析和调试。<br>
+    <br>
+    核心功能包括：<br>
+    <ul>
+      <li><b>方法调用链追踪</b>：实时监控Java方法的执行，捕获完整的调用链路</li>
+      <li><b>可视化调用图</b>：使用思维导图技术，直观展示方法间的调用关系</li>
+      <li><b>热更新支持</b>：无需重启应用即可热更新方法体代码，提高开发效率</li>
+      <li><b>远程调试</b>：连接远程JVM进程进行实时调试和监控</li>
+      <li><b>Groovy脚本支持</b>：动态执行Groovy脚本操作运行时JVM状态</li>
+      <li><b>数据持久化</b>：内置H2数据库存储调用记录，便于后续分析</li>
+    </ul>
+    <br>
+    该插件通过Agent注入技术收集调用信息，并通过内置HTTP服务器暴露API接口，为开发者提供全面的运行时洞察能力。
   ]]></description>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
-    <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.java</depends>
-    <depends>org.intellij.groovy</depends>
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.java</depends>
+  <depends>org.intellij.groovy</depends>
 
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
-    <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="AopPlugin.Tool" factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
-                    doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
-        <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
-    </extensions>
-    <actions>
-        <action class="org.aopbuddy.plugin.action.RunMethodAction" text="Run Method">
-            <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="EditorToggleColumnMode"/>
-        </action>
-        <action class="org.aopbuddy.plugin.action.WatchMethodAction" text="Watch Method">
-            <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="EditorToggleColumnMode"/>
-        </action>
-    </actions>
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="AopPlugin.Tool"
+      factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
+      doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
+    <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
+  </extensions>
+  <actions>
+    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction" text="Run The Method">
+      <add-to-group group-id="EditorPopupMenu" anchor="before"
+        relative-to-action="EditorToggleColumnMode"/>
+    </action>
+<!--    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction" text="Watch Method">-->
+<!--      <add-to-group group-id="EditorPopupMenu" anchor="before"-->
+<!--        relative-to-action="EditorToggleColumnMode"/>-->
+<!--    </action>-->
+    <action id="AopHotswapAction"
+      class="org.aopbuddy.plugin.action.HotswapAction">
+      <add-to-group group-id="Vcs.MessageActionGroup" anchor="last"/>
+    </action>
+  </actions>
 </idea-plugin>

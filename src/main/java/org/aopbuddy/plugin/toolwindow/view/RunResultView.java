@@ -1,6 +1,6 @@
 package org.aopbuddy.plugin.toolwindow.view;
 
-import com.intellij.openapi.fileTypes.FileTypes;
+import com.intellij.json.JsonFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.JBUI;
 import lombok.Getter;
@@ -9,21 +9,22 @@ import org.aopbuddy.plugin.toolwindow.component.MyEditorTextField;
 import org.aopbuddy.plugin.toolwindow.model.RunResultModel;
 
 public class RunResultView implements StatusChangeListener<String> {
-    private final RunResultModel runResultModel;
 
-    @Getter
-    private final MyEditorTextField runStatusEditor;
+  private final RunResultModel runResultModel;
 
-    public RunResultView(Project project, RunResultModel model) {
-        this.runResultModel = model;
-        this.runStatusEditor = new MyEditorTextField(project, FileTypes.PLAIN_TEXT);
-        this.runStatusEditor.setBorder(JBUI.Borders.empty(5));
-        this.runStatusEditor.setViewer(true);
-        runResultModel.addStatusChangeListener(this);
-    }
+  @Getter
+  private final MyEditorTextField runStatusEditor;
 
-    @Override
-    public void onStatusChanged(String newStatus) {
-        runStatusEditor.setText(newStatus);
-    }
+  public RunResultView(Project project, RunResultModel model) {
+    this.runResultModel = model;
+    this.runStatusEditor = new MyEditorTextField(project, JsonFileType.INSTANCE);
+    this.runStatusEditor.setBorder(JBUI.Borders.empty(5));
+//    this.runStatusEditor.setViewer(true);
+    runResultModel.addStatusChangeListener(this);
+  }
+
+  @Override
+  public void onStatusChanged(String newStatus) {
+    runStatusEditor.setText(newStatus, JsonFileType.INSTANCE);
+  }
 }
