@@ -43,16 +43,19 @@
       factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
       doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
     <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
+    <!-- Notification group configuration -->
+    <notificationGroup id="AopBuddy.NotificationGroup" displayType="BALLOON"/>
   </extensions>
   <actions>
-    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction" text="Run The Method">
+    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction"
+      text="Run The Method">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-<!--    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction" text="Watch Method">-->
-<!--      <add-to-group group-id="EditorPopupMenu" anchor="before"-->
-<!--        relative-to-action="EditorToggleColumnMode"/>-->
-<!--    </action>-->
+    <!--    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction" text="Watch Method">-->
+    <!--      <add-to-group group-id="EditorPopupMenu" anchor="before"-->
+    <!--        relative-to-action="EditorToggleColumnMode"/>-->
+    <!--    </action>-->
     <action id="AopHotswapAction"
       class="org.aopbuddy.plugin.action.HotswapAction">
       <add-to-group group-id="Vcs.MessageActionGroup" anchor="last"/>

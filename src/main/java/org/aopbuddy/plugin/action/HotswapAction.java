@@ -19,15 +19,19 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Data;
+import org.aopbuddy.plugin.infra.util.BalloonTipUtil;
 import org.aopbuddy.plugin.infra.util.DebugToolsIdeaClassUtil;
 import org.aopbuddy.plugin.service.JvmService;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class HotswapAction extends AnAction {
 
@@ -122,7 +126,12 @@ public class HotswapAction extends AnAction {
             if (CollectionUtils.isEmpty(allOutputClasses)) {
               return null;
             }
-            project.getService(JvmService.class).hotSwap(allOutputClasses);
+            String s = project.getService(JvmService.class).hotSwap(allOutputClasses);
+            if ("success".equals(s)) {
+              BalloonTipUtil.notifyInfo(project, "热部署成功");
+            } else {
+              BalloonTipUtil.notifyError(project, s);
+            }
             return null;
           })
           .submit(AppExecutorUtil.getAppExecutorService())
