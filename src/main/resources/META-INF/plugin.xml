@@ -8,8 +8,7 @@
   <name>aopPlugin</name>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-  <vendor email="3082246826@qq.com" url="https://www.yourcompany.com">ccc</vendor>
-
+  <vendor>curd</vendor>
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
@@ -34,12 +33,13 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.java</depends>
   <depends>org.intellij.groovy</depends>
-
+  <depends>com.intellij.modules.json</depends>
 
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow id="AopPlugin.Tool"
+        icon="/icons/icon.svg"
       factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
       doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
     <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
@@ -47,7 +47,7 @@
     <notificationGroup id="AopBuddy.NotificationGroup" displayType="BALLOON"/>
   </extensions>
   <actions>
-    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction"
+    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction"  icon="/icons/icon.svg"
       text="Run The Method">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
@@ -57,6 +57,8 @@
     <!--        relative-to-action="EditorToggleColumnMode"/>-->
     <!--    </action>-->
     <action id="AopHotswapAction"
+      icon="/icons/icon.svg"
+      text="选择文件热交换"
       class="org.aopbuddy.plugin.action.HotswapAction">
       <add-to-group group-id="Vcs.MessageActionGroup" anchor="last"/>
     </action>

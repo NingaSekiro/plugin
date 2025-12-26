@@ -59,7 +59,7 @@ public class GroovyConsolePanel extends OnePixelSplitter {
     this.runView = new RunView(runModel);
     this.classloaderModel = new ClassloaderModel(consoleStateService);
     this.classloaderView = new ClassloaderView(classloaderModel);
-
+    setBorder(BorderFactory.createEmptyBorder());
     setFirstComponent(getGroovyConsolePanel());
     setSecondComponent(getJvmResultInfoPanel());
     project.getMessageBus().connect().subscribe(

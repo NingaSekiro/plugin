@@ -18,7 +18,7 @@ public class RunResultView implements StatusChangeListener<String> {
   public RunResultView(Project project, RunResultModel model) {
     this.runResultModel = model;
     this.runStatusEditor = new MyEditorTextField(project, JsonFileType.INSTANCE);
-    this.runStatusEditor.setBorder(JBUI.Borders.empty(5));
+    this.runStatusEditor.setBorder(JBUI.Borders.empty());
 //    this.runStatusEditor.setViewer(true);
     runResultModel.addStatusChangeListener(this);
   }

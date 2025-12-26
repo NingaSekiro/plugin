@@ -17,6 +17,6 @@ public class GroovyEditorView {
         this.project = project;
         // 编辑器
         this.groovyEditor = new MyEditorTextField(project, GroovyFileType.GROOVY_FILE_TYPE);
-        this.groovyEditor.setBorder(JBUI.Borders.empty(5));
+        this.groovyEditor.setBorder(JBUI.Borders.empty());
     }
 }
