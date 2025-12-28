@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import java.util.Set;
 import org.aopbuddy.plugin.infra.util.PluginPathUtil;
 import org.aopbuddy.plugin.servlet.*;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +38,9 @@ public class HttpServer extends RestService {
         String path = queryStringDecoder.path();
         String servicePath = "/api/" + getServiceName() + "/";
         String resourcePath = path.substring(servicePath.length());
-        if (resourcePath.contains("index.html") || resourcePath.contains("assets")) {
+        Set<String> strings = routeHandlerMap.keySet();
+        if (resourcePath.contains("index.html") || resourcePath.contains("assets")
+            || !strings.contains(resourcePath)) {
             handleStaticResource(channelHandlerContext, fullHttpRequest, resourcePath);
         } else {
             String json = routeHandlerMap.get(resourcePath).handle(queryStringDecoder, fullHttpRequest, channelHandlerContext);
