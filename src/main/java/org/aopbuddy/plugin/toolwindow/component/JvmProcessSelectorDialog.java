@@ -58,7 +58,7 @@ public class JvmProcessSelectorDialog extends DialogWrapper {
 
         // 远程 JVM 面板
         JBLabel remoteLabel = new JBLabel(
-                "请输入远程JVM IP和agent http port端口 (e.g., 192.168.1.1:8888),java agent需预先安装，默认端口8888:");
+                "请输入远程JVM IP和agent http port端口 (e.g., 192.168.1.1:12345),java agent需预先安装，默认端口12345:");
         remoteLabel.setBorder(JBUI.Borders.empty(10));
         remotePanel.add(remoteLabel, BorderLayout.NORTH);
 
@@ -81,7 +81,7 @@ public class JvmProcessSelectorDialog extends DialogWrapper {
         int selectedIndex = tabbedPane.getSelectedIndex();
         switch (selectedIndex) {
             case 0 -> { // 本地进程
-                selectedValue = new HttpServer((String) localComboBox.getSelectedItem(), "127.0.0.1", 8888);
+                selectedValue = new HttpServer((String) localComboBox.getSelectedItem(), "127.0.0.1", 12345);
             }
             case 1 -> { // 远程 JVM
                 selectedValue = new HttpServer(null, remoteTextField.getText().split(":")[0], Integer.parseInt(remoteTextField.getText().split(":")[1]));

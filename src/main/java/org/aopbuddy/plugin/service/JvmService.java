@@ -76,7 +76,7 @@ public final class JvmService {
     OkHttpClient okHttpClient = OkHttpClientUtils.getInstance();
     Request request = new Request.Builder()
         .url("http://" + consoleStateService.getIp() + ":" + consoleStateService.getPort()
-            + "/classloaders")
+            + "/classloader")
         .method("GET", null)
         .build();
     try {
