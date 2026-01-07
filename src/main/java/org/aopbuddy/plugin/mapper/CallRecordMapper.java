@@ -1,11 +1,10 @@
 package org.aopbuddy.plugin.mapper;
 
 
-import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.infrastructure.record.CallRecordDo;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 @Mapper
 public interface CallRecordMapper extends BaseMapper {

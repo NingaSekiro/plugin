@@ -126,7 +126,7 @@ public class GroovyConsolePanel extends OnePixelSplitter {
 
   private void updateClassloaderComboBox() {
     List<String> classloaders = jvmService.getClassloaders();
-    classloaders.removeIf(classloader -> classloader.contains("bytebuddy"));
+    classloaders.removeIf(classloader -> classloader.contains("bytebuddy")||classloader.contains("AopAgent"));
     classloaderModel.setClassloaders(classloaders);
     if (!classloaders.isEmpty()) {
       classloaderModel.setSelectedItem(classloaders.get(0));

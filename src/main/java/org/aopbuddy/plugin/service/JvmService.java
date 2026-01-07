@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.service;
 
-import com.aopbuddy.groovy.EvalRequest;
-import com.aopbuddy.infrastructure.JsonUtil;
+import com.aopbuddy.adapter.model.EvalRequest;
+import com.aopbuddy.infrastructure.util.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
@@ -9,16 +9,19 @@ import com.intellij.openapi.project.Project;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
-import okhttp3.*;
-import org.aopbuddy.plugin.action.HotswapAction.ClassFilePath;
-import org.aopbuddy.plugin.infra.model.HttpServer;
-import org.aopbuddy.plugin.infra.util.OkHttpClientUtils;
-import org.aopbuddy.plugin.infra.util.PluginPathUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.aopbuddy.plugin.action.HotswapAction.ClassFilePath;
+import org.aopbuddy.plugin.infra.model.HttpServer;
+import org.aopbuddy.plugin.infra.util.OkHttpClientUtils;
+import org.aopbuddy.plugin.infra.util.PluginPathUtil;
 
 @Service(Service.Level.PROJECT)
 public final class JvmService {

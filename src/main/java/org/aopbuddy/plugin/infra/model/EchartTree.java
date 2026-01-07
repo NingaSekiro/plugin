@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.infra.model;
 
-import com.aopbuddy.infrastructure.StringUtils;
-import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.infrastructure.record.CallRecordDo;
+import com.aopbuddy.infrastructure.util.StringUtils;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -51,9 +51,9 @@ public class EchartTree {
     EchartTree echartTree = new EchartTree();
     echartTree.setId(String.valueOf(callRecordDo.getThreadLocalMethodId()));
     String[] info = StringUtils.splitMethodInfo(callRecordDo.getMethod());
-    String[] split = info[1].split("\\.");
+    String[] split = info[0].split("\\.");
     String simpleClassName = split[split.length - 1];
-    echartTree.setName(simpleClassName + "." + info[2] + "()");
+    echartTree.setName(simpleClassName + "." + info[1] + "()");
     echartTree.setChildren(new LinkedList<>());
     return echartTree;
   }

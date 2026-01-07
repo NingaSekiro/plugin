@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.infra.model;
 
-import com.aopbuddy.infrastructure.StringUtils;
-import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.infrastructure.record.CallRecordDo;
+import com.aopbuddy.infrastructure.util.StringUtils;
 import lombok.Data;
 
 @Data
@@ -16,8 +16,8 @@ public class MethodChainVo {
         MethodChainVo methodChainVo = new MethodChainVo();
         String[] strings = StringUtils.splitMethodInfo(callRecordDo.getMethod());
         methodChainVo.setMethodChain(String.format("%s %s()",
-                strings[1],
-                strings[2]));
+                strings[0],
+                strings[1]));
         methodChainVo.setId(callRecordDo.getId());
         methodChainVo.setThreadName(callRecordDo.getThreadName());
         methodChainVo.setCallChainId(callRecordDo.getCallChainId());

@@ -1,9 +1,7 @@
 package groovy
 
-import com.aopbuddy.agent.TraceListener
-import com.aopbuddy.aspect.MethodPointcut
-import com.aopbuddy.record.CaffeineCache
-import com.aopbuddy.retransform.Context
+import com.aopbuddy.infrastructure.retransform.pointcut.MethodPointcut
+
 
 MethodPointcut pointcut = MethodPointcut.of(
         params.className, params.methodName, "(..)");

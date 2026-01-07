@@ -2,7 +2,7 @@ package org.aopbuddy.plugin.infra.util;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.infrastructure.record.CallRecordDo;
 import java.util.ArrayList;
 import java.util.List;
 import org.aopbuddy.plugin.infra.model.TreeNode;

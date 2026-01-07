@@ -1,10 +1,12 @@
 package org.aopbuddy.plugin.infra.util;
 
-import com.aopbuddy.bytekit.MethodInfo;
-import com.aopbuddy.infrastructure.StringUtils;
-import com.aopbuddy.record.CallRecordDo;
 
-import java.util.*;
+import com.aopbuddy.infrastructure.record.CallRecordDo;
+import com.aopbuddy.infrastructure.util.StringUtils;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 将方法调用列表转换为mermaid时序图代码
@@ -31,7 +33,7 @@ public class MermaidConverter {
   }
 
   //目标path流程,只取methodCalls中的调用记录
-  private static String dfsTargetPath(Integer index,List<CallRecordDo> methodCalls) {
+  private static String dfsTargetPath(Integer index, List<CallRecordDo> methodCalls) {
     // methodCalls排序
     if (index >= methodCalls.size()) {
       return "";
@@ -48,15 +50,13 @@ public class MermaidConverter {
       }
     }
     String[] info = StringUtils.splitMethodInfo(callRecordDo.getMethod());
-    MethodInfo methodInfo = MethodInfo.builder().methodAccess(info[0]).className(info[1])
-        .methodName(info[2]).build();
-    String[] split = methodInfo.getClassName().split("\\.");
+    String[] split = info[0].split("\\.");
     String simpleClassName = split[split.length - 1];
     String[] split1 = StringUtils.splitMethodInfo(parentCallRecordDo.getMethod())[1].split("\\.");
     String caller = split1[split1.length - 1];
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append(String.format("    %s->>+%s: %s\n",
-        caller, simpleClassName, callRecordDo.getId() + "-" + methodInfo.getMethodName() + "()"));
+        caller, simpleClassName, callRecordDo.getId() + "-" + info[1] + "()"));
     stringBuilder.append(dfsTargetPath(index + 1, methodCalls));
     if (caller.equals(simpleClassName)) {
       stringBuilder.append(String.format("    deactivate %s\n", caller));

@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.servlet;
 
-import com.aopbuddy.infrastructure.JsonUtil;
-import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.infrastructure.record.CallRecordDo;
+import com.aopbuddy.infrastructure.util.JsonUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
