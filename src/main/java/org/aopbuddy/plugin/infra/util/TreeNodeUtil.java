@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.infra.util;
 
-import com.aopbuddy.infrastructure.record.CallRecordDo;
-import com.aopbuddy.infrastructure.util.StringUtils;
+import com.aopbuddy.infrastructure.api.CallRecordDo;
+import com.aopbuddy.infrastructure.api.StringUtils;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;

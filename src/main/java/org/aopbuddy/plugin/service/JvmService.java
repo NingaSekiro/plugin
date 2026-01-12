@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.service;
 
 import com.aopbuddy.adapter.model.EvalRequest;
-import com.aopbuddy.infrastructure.util.JsonUtil;
+import com.aopbuddy.infrastructure.api.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;

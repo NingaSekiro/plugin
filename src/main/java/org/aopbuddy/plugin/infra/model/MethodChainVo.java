@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.infra.model;
 
-import com.aopbuddy.infrastructure.record.CallRecordDo;
-import com.aopbuddy.infrastructure.util.StringUtils;
+import com.aopbuddy.infrastructure.api.CallRecordDo;
+import com.aopbuddy.infrastructure.api.StringUtils;
 import lombok.Data;
 
 @Data

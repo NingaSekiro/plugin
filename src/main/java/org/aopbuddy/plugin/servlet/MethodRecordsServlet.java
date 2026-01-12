@@ -1,6 +1,6 @@
 package org.aopbuddy.plugin.servlet;
 
-import com.aopbuddy.infrastructure.util.JsonUtil;
+import com.aopbuddy.infrastructure.api.JsonUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;

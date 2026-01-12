@@ -1,7 +1,7 @@
 package org.aopbuddy.plugin.mapper;
 
 
-import com.aopbuddy.infrastructure.record.CallRecordDo;
+import com.aopbuddy.infrastructure.api.CallRecordDo;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

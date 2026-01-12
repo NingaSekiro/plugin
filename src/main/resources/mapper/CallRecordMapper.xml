@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.aopbuddy.plugin.mapper.CallRecordMapper">
-    <resultMap id="BaseResultMap" type="com.aopbuddy.infrastructure.record.CallRecordDo">
+    <resultMap id="BaseResultMap" type="com.aopbuddy.infrastructure.api.CallRecordDo">
         <result column="ID" jdbcType="BIGINT" property="id"/>
         <result column="CALL_CHAIN_ID" jdbcType="BIGINT" property="callChainId"/>
         <result column="METHOD" jdbcType="VARCHAR" property="method"/>

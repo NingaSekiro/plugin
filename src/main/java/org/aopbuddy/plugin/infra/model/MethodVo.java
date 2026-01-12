@@ -1,6 +1,6 @@
 package org.aopbuddy.plugin.infra.model;
 
-import com.aopbuddy.infrastructure.record.CallRecordDo;
+import com.aopbuddy.infrastructure.api.CallRecordDo;
 import lombok.Getter;
 import lombok.Setter;
 

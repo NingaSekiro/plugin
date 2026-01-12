@@ -1,6 +1,6 @@
 package org.aopbuddy.plugin.infra.util;
 
-import com.aopbuddy.infrastructure.util.JsonUtil;
+import com.aopbuddy.infrastructure.api.JsonUtil;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import java.util.List;
