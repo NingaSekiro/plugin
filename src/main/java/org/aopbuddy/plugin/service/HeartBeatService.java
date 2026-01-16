@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 @Service(Service.Level.PROJECT)
 public final class HeartBeatService {
     @Setter
+    @Getter
     private boolean isRunning = false;
 
     @Getter

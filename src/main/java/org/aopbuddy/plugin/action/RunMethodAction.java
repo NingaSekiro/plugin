@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
 import org.aopbuddy.plugin.infra.util.PsiKit;
 
@@ -28,13 +27,13 @@ public class RunMethodAction extends AnAction {
         }
         // 检查方法的可见性
         String codeSnippet;
-        if (method.hasModifierProperty(PsiModifier.PUBLIC)) {
+//        if (method.hasModifierProperty(PsiModifier.PUBLIC)) {
             // 对于公共方法，生成简单的调用表达式
             codeSnippet = generatePublicMethodCall(method);
-        } else {
+//        } else {
             // 对于私有或受保护方法，生成反射调用表达式
-            codeSnippet = generatePrivateMethodCall(method);
-        }
+//            codeSnippet = generatePrivateMethodCall(method);
+//        }
         ToolWindowUpdateNotifier publisher = project.getMessageBus()
                 .syncPublisher(ToolWindowUpdateNotifier.GROOVY_CONSOLE_CHANGED_TOPIC);
         publisher.onUpdate(codeSnippet);
@@ -59,7 +58,6 @@ public class RunMethodAction extends AnAction {
             String variableName = Character.toLowerCase(simpleClassName.charAt(0)) + simpleClassName.substring(1);
 
             sb.append(simpleClassName).append(" ").append(variableName).append(" = getObject(").append(simpleClassName).append(".class);\n");
-            sb.append("//").append(variableName).append(".").append(method.getName()).append("();\n");
             sb.append("toJson(").append(variableName).append(".").append(method.getName()).append("());");
         }
 

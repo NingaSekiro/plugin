@@ -10,7 +10,6 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import okhttp3.MediaType;
@@ -111,7 +110,8 @@ public final class JvmService {
     try {
       Response response = okHttpClient.newCall(request).execute();
       return response.body().string();
-    } catch (IOException e) {
+    } catch (Throwable e) {
+      LOGGER.error("eval fail",e);
       return null;
     }
   }
