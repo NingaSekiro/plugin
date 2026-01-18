@@ -43,6 +43,8 @@
       factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
       doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
     <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
+    <codeInsight.lineMarkerProvider language="JAVA"
+      implementationClass="org.aopbuddy.plugin.linemarker.WatchMethodLineMarkerProvider"/>
     <!-- Notification group configuration -->
     <notificationGroup id="AopBuddy.NotificationGroup" displayType="BALLOON"/>
   </extensions>
@@ -52,10 +54,16 @@
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-    <!--    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction" text="Watch Method">-->
-    <!--      <add-to-group group-id="EditorPopupMenu" anchor="before"-->
-    <!--        relative-to-action="EditorToggleColumnMode"/>-->
-    <!--    </action>-->
+    <action id="AopRunGroovyAction" class="org.aopbuddy.plugin.action.RunGroovyAction"  icon="/icons/icon.svg"
+      text="Run The Groovy Script">
+      <add-to-group group-id="EditorPopupMenu" anchor="before"
+        relative-to-action="EditorToggleColumnMode"/>
+    </action>
+    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction"  icon="/icons/icon.svg"
+      text="Watch Method">
+      <add-to-group group-id="EditorPopupMenu" anchor="before"
+        relative-to-action="EditorToggleColumnMode"/>
+    </action>
     <action id="AopHotswapAction"
       icon="/icons/icon.svg"
       text="选择文件热交换"

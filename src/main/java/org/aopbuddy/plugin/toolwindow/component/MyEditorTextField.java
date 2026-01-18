@@ -75,6 +75,6 @@ public class MyEditorTextField extends EditorTextField {
     long stamp = LocalTimeCounter.currentTime();
     PsiFile psiFile = factory.createFileFromText("aop-plugin", fileType,
         (text == null) ? "" : text, stamp, true, false);
-    return PsiDocumentManager.getInstance(getProject()).getDocument(psiFile);
+    return ReadAction.compute(() -> PsiDocumentManager.getInstance(getProject()).getDocument(psiFile));
   }
 }
