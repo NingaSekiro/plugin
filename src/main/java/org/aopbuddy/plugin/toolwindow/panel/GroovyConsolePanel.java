@@ -1,6 +1,7 @@
 package org.aopbuddy.plugin.toolwindow.panel;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.OnePixelSplitter;
@@ -20,7 +21,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroovyConsolePanel extends OnePixelSplitter {
+public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
   private static final Logger LOGGER = Logger.getInstance(GroovyConsolePanel.class);
 
@@ -62,11 +63,11 @@ public class GroovyConsolePanel extends OnePixelSplitter {
     setBorder(BorderFactory.createEmptyBorder());
     setFirstComponent(getGroovyConsolePanel());
     setSecondComponent(getJvmResultInfoPanel());
-    project.getMessageBus().connect().subscribe(
+    project.getMessageBus().connect(this).subscribe(
         ToolWindowUpdateNotifier.GROOVY_CONSOLE_CHANGED_TOPIC,
         (ToolWindowUpdateNotifier) this.groovyEditorView.getGroovyEditor()::setText);
     // 考虑java bean的监听 替代
-    project.getMessageBus().connect().subscribe(
+    project.getMessageBus().connect(this).subscribe(
         ToolWindowUpdateNotifier.ATTACH_STATUS_CHANGED_TOPIC,
         (ToolWindowUpdateNotifier) message -> {
           boolean status = Boolean.parseBoolean(message);
@@ -82,6 +83,13 @@ public class GroovyConsolePanel extends OnePixelSplitter {
           this.attachModel.setStatus(status);
         }
     );
+  }
+
+  @Override
+  public void dispose() {
+    if (attachView != null) {
+      attachView.dispose();
+    }
   }
 
 

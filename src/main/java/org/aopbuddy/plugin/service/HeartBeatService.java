@@ -2,6 +2,7 @@ package org.aopbuddy.plugin.service;
 
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.Disposable;
 import lombok.Getter;
 import lombok.Setter;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
@@ -12,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Service(Service.Level.PROJECT)
-public final class HeartBeatService {
+public final class HeartBeatService implements Disposable {
     @Setter
     @Getter
     private boolean isRunning = false;
@@ -48,7 +49,11 @@ public final class HeartBeatService {
     }
 
     // 当服务被销毁时调用此方法
+    @Override
     public void dispose() {
         isRunning = false;
+        if (executor != null) {
+            executor.shutdownNow();
+        }
     }
 }

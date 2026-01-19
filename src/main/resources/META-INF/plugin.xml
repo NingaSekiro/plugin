@@ -39,9 +39,8 @@
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow id="AopPlugin.Tool"
-        icon="/icons/icon.svg"
       factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
-      doNotActivateOnStart="true" canCloseContents="false" anchor="bottom"/>
+      canCloseContents="false" anchor="bottom"/>
     <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
     <codeInsight.lineMarkerProvider language="JAVA"
       implementationClass="org.aopbuddy.plugin.linemarker.WatchMethodLineMarkerProvider"/>
@@ -49,23 +48,22 @@
     <notificationGroup id="AopBuddy.NotificationGroup" displayType="BALLOON"/>
   </extensions>
   <actions>
-    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction"  icon="/icons/icon.svg"
+    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction"
       text="Run The Method">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-    <action id="AopRunGroovyAction" class="org.aopbuddy.plugin.action.RunGroovyAction"  icon="/icons/icon.svg"
+    <action id="AopRunGroovyAction" class="org.aopbuddy.plugin.action.RunGroovyAction"
       text="Run The Groovy Script">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction"  icon="/icons/icon.svg"
+    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction"
       text="Watch Method">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
     <action id="AopHotswapAction"
-      icon="/icons/icon.svg"
       text="选择文件热交换"
       class="org.aopbuddy.plugin.action.HotswapAction">
       <add-to-group group-id="Vcs.MessageActionGroup" anchor="last"/>

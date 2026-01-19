@@ -10,24 +10,36 @@ import java.awt.*;
 import java.util.List;
 
 public class AttachView {
-    @Getter
-    private JButton attachButton;
 
-    private final AttachModel attachModel;
+  @Getter
+  private JButton attachButton;
 
-    public AttachView(AttachModel model) {
-        this.attachModel = model;
-        attachButton = new JButton("1.未连接JVM");
-        attachButton.setContentAreaFilled(false);
-        attachButton.setPreferredSize(new Dimension(200, 30));
-        attachButton.setModel(attachModel);
-        attachButton.addActionListener(e -> {
-            List<String> jvms = attachModel.getJvms();
-            HttpServer httpServer = JvmProcessSelectorDialog.showAndGetSync(jvms);
-            attachModel.startHeartBeat(httpServer);
-        });
-        attachModel.addChangeListener(e -> {
-            attachButton.setText(attachModel.isAttached() ? "2.已连接JVM" : "1.未连接JVM");
-        });
+  private final AttachModel attachModel;
+
+  public AttachView(AttachModel model) {
+    this.attachModel = model;
+    attachButton = new JButton("1.未连接JVM");
+    attachButton.setContentAreaFilled(false);
+    attachButton.setPreferredSize(new Dimension(200, 30));
+    attachButton.setModel(attachModel);
+    attachButton.addActionListener(e -> {
+      List<String> jvms = attachModel.getJvms();
+      HttpServer httpServer = JvmProcessSelectorDialog.showAndGetSync(jvms);
+      attachModel.startHeartBeat(httpServer);
+
+    });
+    attachModel.addChangeListener(e -> {
+      attachButton.setText(attachModel.isAttached() ? "2.已连接JVM" : "1.未连接JVM");
+    });
+  }
+
+  public void dispose() {
+    if (attachButton != null) {
+      // 断开Model引用，防止内存泄漏
+      attachButton.setModel(new DefaultButtonModel());
+      for (java.awt.event.ActionListener al : attachButton.getActionListeners()) {
+        attachButton.removeActionListener(al);
+      }
     }
+  }
 }

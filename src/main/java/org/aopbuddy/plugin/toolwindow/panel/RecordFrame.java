@@ -2,11 +2,12 @@ package org.aopbuddy.plugin.toolwindow.panel;
 
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.Disposable;
 
 import javax.swing.*;
 
 @Service(Service.Level.PROJECT)
-public final class RecordFrame extends JFrame {
+public final class RecordFrame extends JFrame implements Disposable {
     private final MermaidPanel mermaidPanel;
 
     public static RecordFrame getInstance(Project project) {
@@ -27,5 +28,10 @@ public final class RecordFrame extends JFrame {
         this.setVisible(true);
         this.setAlwaysOnTop(true);
         this.setAlwaysOnTop(false);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
     }
 }

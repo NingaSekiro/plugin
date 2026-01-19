@@ -2,6 +2,7 @@ package org.aopbuddy.plugin.service;
 
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.Disposable;
 import org.aopbuddy.plugin.mapper.BaseMapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
@@ -18,9 +19,13 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.InputStream;
 import java.util.function.Function;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
 
 @Service// 全局应用级服务（IDE启动时初始化，全局唯一）
-public final class DatabaseService {
+public final class DatabaseService implements Disposable {
     private static final Logger LOGGER = Logger.getInstance(DatabaseService.class);
     private SqlSessionFactory sqlSessionFactory = null;
     private DataSource dataSource; // 新增：持有数据源引用，用于关闭连接池
@@ -100,6 +105,29 @@ public final class DatabaseService {
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute database operation: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        // 1. 关闭数据源
+        if (dataSource instanceof PooledDataSource) {
+            ((PooledDataSource) dataSource).forceCloseAll();
+        }
+
+        // 2. 注销驱动，解决内存泄漏
+        try {
+            Enumeration<Driver> drivers = DriverManager.getDrivers();
+            while (drivers.hasMoreElements()) {
+                Driver driver = drivers.nextElement();
+                // 仅注销由当前插件类加载器加载的驱动
+                if (driver.getClass().getClassLoader() == this.getClass().getClassLoader()) {
+                    DriverManager.deregisterDriver(driver);
+                    LOGGER.info("Deregistered JDBC driver: " + driver);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Failed to deregister JDBC driver", e);
         }
     }
 }

@@ -1,12 +1,17 @@
 package org.aopbuddy.plugin.infra;
 
+import com.intellij.openapi.diagnostic.Logger;
 import io.netty.handler.timeout.ReadTimeoutException;
-import okhttp3.*;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.http.conn.ConnectTimeoutException;
 
 /**
- * OkHttp重试拦截器<br>
- * 使用：
+ * OkHttp重试拦截器<br> 使用：
  * <pre>
  * OkHttpClient client = new OkHttpClient
  *        .Builder()
@@ -18,47 +23,51 @@ import org.apache.http.conn.ConnectTimeoutException;
  */
 public class OkHttpRetryInterceptor implements Interceptor {
 
-    /**
-     * 最大重试次数
-     */
-    private final int maxRetry;
+  private static final Logger LOGGER = Logger.getInstance(OkHttpRetryInterceptor.class);
 
-    public OkHttpRetryInterceptor(int maxRetry) {
-        this.maxRetry = maxRetry;
-    }
+  /**
+   * 最大重试次数
+   */
+  private final int maxRetry;
 
-    @Override
-    public Response intercept(Chain chain) {
-        return retry(chain, maxRetry);
-    }
+  public OkHttpRetryInterceptor(int maxRetry) {
+    this.maxRetry = maxRetry;
+  }
 
-    private Response retry(Chain chain, int retryCet) {
-        Request request = chain.request();
-        Response response;
-        try {
-            response = chain.proceed(request);
-        } catch (ConnectTimeoutException | ReadTimeoutException e) {
-            if (maxRetry > retryCet) {
-                return retry(chain, retryCet + 1);
-            }
-            // interceptor 返回 null 会报 IllegalStateException 异常
-            return new Response.Builder()
-                    .code(504) // Gateway Timeout
-                    .protocol(Protocol.HTTP_1_1)
-                    .message("Gateway Timeout")
-                    .request(request)
-                    .body(ResponseBody.create("timeout", MediaType.parse("text/plain")))
-                    .build();
-        } catch (Exception e2) {
-            // interceptor 返回 null 会报 IllegalStateException 异常
-            return new Response.Builder()
-                    .code(500) // Internal Server Error
-                    .protocol(Protocol.HTTP_1_1)
-                    .message("Internal Server Error")
-                    .request(request)
-                    .body(ResponseBody.create("Internal Server Error", MediaType.parse("text/plain")))
-                    .build();
-        }
-        return response;
+  @Override
+  public Response intercept(Chain chain) {
+    return retry(chain, maxRetry);
+  }
+
+  private Response retry(Chain chain, int retryCet) {
+    Request request = chain.request();
+    Response response;
+    try {
+      response = chain.proceed(request);
+    } catch (ConnectTimeoutException | ReadTimeoutException e) {
+      LOGGER.error("retry request: " + retryCet + " times, error", e);
+      if (maxRetry > retryCet) {
+        return retry(chain, retryCet + 1);
+      }
+      // interceptor 返回 null 会报 IllegalStateException 异常
+      return new Response.Builder()
+          .code(504) // Gateway Timeout
+          .protocol(Protocol.HTTP_1_1)
+          .message("Gateway Timeout")
+          .request(request)
+          .body(ResponseBody.create("timeout", MediaType.parse("text/plain")))
+          .build();
+    } catch (Exception e2) {
+      LOGGER.error("unhandled Exception error", e2);
+      // interceptor 返回 null 会报 IllegalStateException 异常
+      return new Response.Builder()
+          .code(500) // Internal Server Error
+          .protocol(Protocol.HTTP_1_1)
+          .message("Internal Server Error")
+          .request(request)
+          .body(ResponseBody.create("Internal Server Error", MediaType.parse("text/plain")))
+          .build();
     }
+    return response;
+  }
 }

@@ -1,6 +1,5 @@
 package org.aopbuddy.plugin.linemarker;
 
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
@@ -41,7 +40,7 @@ public class WatchMethodLineMarkerProvider extends LineMarkerProviderDescriptor 
     if (!state.getWatchedMethodKeys().contains(methodKey)) {
       return null;
     }
-    Icon icon = IconUtil.PLUGIN_ICON;
+    Icon icon = IconUtil.getPluginIcon();
     GutterIconNavigationHandler<PsiElement> nav = (e, elt) -> {
       WebSocketClientService ws = project.getService(WebSocketClientService.class);
       ws.sendUnwatchRequest(method.getContainingClass().getQualifiedName(), method.getName());

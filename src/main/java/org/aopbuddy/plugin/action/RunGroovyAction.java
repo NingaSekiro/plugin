@@ -89,7 +89,7 @@ public class RunGroovyAction extends AnAction {
 
         @Override
         public Icon getIcon() {
-          return IconUtil.PLUGIN_ICON;
+          return IconUtil.getPluginIcon();
         }
       };
       runContentManager.showRunContent(executor, runContentDescriptor);

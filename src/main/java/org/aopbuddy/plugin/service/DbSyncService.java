@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.Disposable;
 import lombok.Getter;
 import lombok.Setter;
 import org.aopbuddy.plugin.infra.util.DatabaseUtils;
@@ -21,7 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service(Service.Level.PROJECT)
-public final class DbSyncService {
+public final class DbSyncService implements Disposable {
     private static final Logger LOGGER = Logger.getInstance(DbSyncService.class);
 
     @Getter
@@ -111,6 +112,14 @@ public final class DbSyncService {
         String eval = jvmService.eval("deleteListener()");
         LOGGER.info(String.format("delete trace listener result: %s", eval));
         LOGGER.info("stop sync db");
+    }
+
+    @Override
+    public void dispose() {
+        isRunning = false;
+        if (executor != null) {
+            executor.shutdownNow();
+        }
     }
 }
 

@@ -17,6 +17,7 @@ public class CodeExecutorToolWindowFactory implements ToolWindowFactory {
         // 将面板添加到工具窗口
         ContentFactory contentFactory = ContentFactory.getInstance();
         Content content = contentFactory.createContent(mainPanel, "", false);
+        content.setDisposer(mainPanel);
         toolWindow.getContentManager().addContent(content);
     }
 }
