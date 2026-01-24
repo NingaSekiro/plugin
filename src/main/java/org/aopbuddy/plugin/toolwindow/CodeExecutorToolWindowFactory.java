@@ -10,6 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class CodeExecutorToolWindowFactory implements ToolWindowFactory {
 
+    public void init(@NotNull ToolWindow toolWindow) {
+        toolWindow.setStripeTitle("Groovy Console");
+    }
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         // 创建主面板

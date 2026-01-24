@@ -75,12 +75,12 @@ public class HttpServer extends RestService {
     }
 
     @Override
-    protected boolean isHostTrusted(@NotNull FullHttpRequest request) {
+    protected boolean isHostTrusted(@NotNull FullHttpRequest request, @NotNull QueryStringDecoder queryStringDecoder) {
         return true;
     }
 
     @Override
-    protected boolean isMethodSupported(HttpMethod method) {
+    protected boolean isMethodSupported(@NotNull HttpMethod method) {
         return method == HttpMethod.GET || method == HttpMethod.POST;
     }
 }

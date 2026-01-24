@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.aopbuddy"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 
 repositories {
@@ -61,7 +61,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("222")
+        sinceBuild.set("231")
+        untilBuild.set("")
     }
 
     signPlugin {

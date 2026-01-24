@@ -5,27 +5,46 @@
 
   <!-- Public plugin name should be written in Title Case.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-  <name>aopPlugin</name>
+  <name>Java Insight</name>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-  <vendor>curd</vendor>
+    <vendor url="https://github.com/NingaSekiro">NingaSekiro</vendor>
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
   <description><![CDATA[
-    AOP Buddy是一个强大的IntelliJ IDEA插件，专注于Java应用程序的运行时分析和调试。<br>
+    Java Insight is a powerful IntelliJ IDEA plugin designed for comprehensive runtime analysis and debugging of Java applications.<br>
     <br>
-    核心功能包括：<br>
+    🎯 <b>Key Features:</b><br>
     <ul>
-      <li><b>方法调用链追踪</b>：实时监控Java方法的执行，捕获完整的调用链路</li>
-      <li><b>可视化调用图</b>：使用思维导图技术，直观展示方法间的调用关系</li>
-      <li><b>热更新支持</b>：无需重启应用即可热更新方法体代码，提高开发效率</li>
-      <li><b>远程调试</b>：连接远程JVM进程进行实时调试和监控</li>
-      <li><b>Groovy脚本支持</b>：动态执行Groovy脚本操作运行时JVM状态</li>
-      <li><b>数据持久化</b>：内置H2数据库存储调用记录，便于后续分析</li>
+      <li><b>Method Call Chain Tracking</b>：Real-time monitoring of Java method execution, capturing complete call chains</li>
+      <li><b>Visual Call Graph</b>：Intuitively display real method call relationships during runtime, quickly understand system architecture</li>
+      <li><b>Hotswap Support</b>：Update method body code without restarting the application, improving development efficiency</li>
+      <li><b>Remote Debugging</b>：Connect to remote JVM processes for real-time debugging and monitoring</li>
+      <li><b>Recording Capability</b>：Record input and output parameters of running methods</li>
+      <li><b>Groovy Script Support</b>：Dynamically execute scripts to manipulate runtime JVM state</li>
+      <li><b>Data Persistence</b>：Store call records for subsequent analysis and issue identification</li>
     </ul>
     <br>
-    该插件通过Agent注入技术收集调用信息，并通过内置HTTP服务器暴露API接口，为开发者提供全面的运行时洞察能力。
+    Java Insight provides unprecedented runtime insights for developers, helping you quickly understand code execution paths, identify performance bottlenecks, optimize system architecture, and make Java development more efficient and controllable.
+    <br>
+    <br>
+    --------------------------------------------------
+    <br>
+    Java Insight是一款强大的IntelliJ IDEA插件，为Java开发者提供全面的运行时分析和调试能力。<br>
+    <br>
+    🎯 <b>核心功能：</b><br>
+    <ul>
+      <li><b>方法调用链追踪</b>：实时监控Java方法执行，捕获完整调用链路</li>
+      <li><b>可视化调用图</b>：直观展示运行中真实的方法间调用关系图，快速理解系统结构</li>
+      <li><b>热更新支持</b>：无需重启应用即可热更新方法体代码，提升开发效率</li>
+      <li><b>远程调试能力</b>：连接远程JVM进程进行实时调试和监控</li>
+      <li><b>录制能力</b>：录制运行方法的出入参</li>
+      <li><b>Groovy脚本支持</b>：动态执行脚本操作运行时JVM状态</li>
+      <li><b>数据持久化</b>：存储调用记录，便于后续分析和问题定位</li>
+    </ul>
+    <br>
+    Java Insight为开发者提供了前所未有的运行时洞察能力，帮助你快速理解代码执行路径、定位性能瓶颈、优化系统架构，让Java开发更加高效和可控。
   ]]></description>
 
   <!-- Product and plugin compatibility requirements.
@@ -39,6 +58,7 @@
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow id="AopPlugin.Tool"
+      icon="/icons/icon.svg"
       factoryClass="org.aopbuddy.plugin.toolwindow.CodeExecutorToolWindowFactory"
       canCloseContents="false" anchor="bottom"/>
     <httpRequestHandler implementation="org.aopbuddy.plugin.service.HttpServer"/>
@@ -48,23 +68,23 @@
     <notificationGroup id="AopBuddy.NotificationGroup" displayType="BALLOON"/>
   </extensions>
   <actions>
-    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction"
+    <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction" icon="/icons/icon.svg"
       text="Run The Method">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-    <action id="AopRunGroovyAction" class="org.aopbuddy.plugin.action.RunGroovyAction"
+    <action id="AopRunGroovyAction" class="org.aopbuddy.plugin.action.RunGroovyAction" icon="/icons/icon.svg"
       text="Run The Groovy Script">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction"
+    <action id="AopWatchMethodAction" class="org.aopbuddy.plugin.action.WatchMethodAction" icon="/icons/icon.svg"
       text="Watch Method">
       <add-to-group group-id="EditorPopupMenu" anchor="before"
         relative-to-action="EditorToggleColumnMode"/>
     </action>
-    <action id="AopHotswapAction"
-      text="选择文件热交换"
+    <action id="AopHotswapAction" icon="/icons/icon.svg"
+      text="Hotswap Class"
       class="org.aopbuddy.plugin.action.HotswapAction">
       <add-to-group group-id="Vcs.MessageActionGroup" anchor="last"/>
     </action>

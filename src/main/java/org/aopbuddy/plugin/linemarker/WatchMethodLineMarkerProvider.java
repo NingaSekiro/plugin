@@ -51,7 +51,8 @@ public class WatchMethodLineMarkerProvider extends LineMarkerProviderDescriptor 
         icon,
         psiElement -> "点击取消 Watch",
         nav,
-        Alignment.RIGHT
+        Alignment.RIGHT,
+        () -> "点击取消 Watch"
     );
   }
 

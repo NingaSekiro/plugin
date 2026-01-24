@@ -134,7 +134,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
   private void updateClassloaderComboBox() {
     List<String> classloaders = jvmService.getClassloaders();
-    classloaders.removeIf(classloader -> classloader.contains("bytebuddy")||classloader.contains("AopAgent"));
+    classloaders.removeIf(classloader -> classloader.contains("bytebuddy")||classloader.contains("aopbuddy"));
     classloaderModel.setClassloaders(classloaders);
     if (!classloaders.isEmpty()) {
       classloaderModel.setSelectedItem(classloaders.get(0));

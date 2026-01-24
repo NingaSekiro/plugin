@@ -8,6 +8,10 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import okhttp3.*;
 import okio.ByteString;
 import org.aopbuddy.plugin.infra.util.BalloonTipUtil;
@@ -168,10 +172,28 @@ public final class WebSocketClientService {
     String methodKey = String.valueOf(classNameObj) + "#" + String.valueOf(methodNameObj);
     if ("watch_request".equals(requestType)) {
       consoleStateService.getWatchedMethodKeys().add(methodKey);
-      DaemonCodeAnalyzer.getInstance(project).restart();
+      refreshHighlighters();
     } else if ("unwatch_request".equals(requestType)) {
       consoleStateService.getWatchedMethodKeys().remove(methodKey);
-      DaemonCodeAnalyzer.getInstance(project).restart();
+      refreshHighlighters();
     }
+  }
+
+  private void refreshHighlighters() {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      if (project.isDisposed()) {
+        return;
+      }
+      FileEditorManager editorManager = FileEditorManager.getInstance(project);
+      PsiManager psiManager = PsiManager.getInstance(project);
+      DaemonCodeAnalyzer analyzer = DaemonCodeAnalyzer.getInstance(project);
+
+      for (VirtualFile file : editorManager.getOpenFiles()) {
+        PsiFile psiFile = psiManager.findFile(file);
+        if (psiFile != null) {
+          analyzer.restart(psiFile);
+        }
+      }
+    });
   }
 }
