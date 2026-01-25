@@ -8,18 +8,33 @@ import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.ui.JBUI;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
 import org.aopbuddy.plugin.service.ConsoleStateService;
 import org.aopbuddy.plugin.service.DbSyncService;
 import org.aopbuddy.plugin.service.HeartBeatService;
 import org.aopbuddy.plugin.service.JvmService;
-import org.aopbuddy.plugin.toolwindow.model.*;
-import org.aopbuddy.plugin.toolwindow.view.*;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import org.aopbuddy.plugin.service.WebSocketClientService;
+import org.aopbuddy.plugin.toolwindow.model.AttachModel;
+import org.aopbuddy.plugin.toolwindow.model.ClassloaderModel;
+import org.aopbuddy.plugin.toolwindow.model.RecordModel;
+import org.aopbuddy.plugin.toolwindow.model.RunModel;
+import org.aopbuddy.plugin.toolwindow.model.RunResultModel;
+import org.aopbuddy.plugin.toolwindow.view.AttachView;
+import org.aopbuddy.plugin.toolwindow.view.ClassloaderView;
+import org.aopbuddy.plugin.toolwindow.view.GroovyEditorView;
+import org.aopbuddy.plugin.toolwindow.view.RunResultView;
+import org.aopbuddy.plugin.toolwindow.view.RunView;
 
 public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
@@ -30,6 +45,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
   private final JvmService jvmService;
   private final DbSyncService dbSyncService;
   private final HeartBeatService heartBeatService;
+  private final WebSocketClientService webSocketClientService;
 
   private final GroovyEditorView groovyEditorView;
   private final ClassloaderView classloaderView;
@@ -50,6 +66,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     this.jvmService = project.getService(JvmService.class);
     this.dbSyncService = project.getService(DbSyncService.class);
     this.heartBeatService = project.getService(HeartBeatService.class);
+    this.webSocketClientService = project.getService(WebSocketClientService.class);
 
     this.groovyEditorView = new GroovyEditorView(project);
     this.runResultView = new RunResultView(project, runResultModel);
@@ -76,7 +93,8 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
             this.heartBeatService.setRunning(false);
             this.classloaderModel.setClassloaders(new ArrayList<>());
             this.classloaderModel.setSelectedItem(null);
-            consoleStateService.setIp(null);
+            this.consoleStateService.setIp(null);
+            this.webSocketClientService.clearWatchedMethodKeys();
           } else {
             this.updateClassloaderComboBox();
           }
@@ -134,7 +152,8 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
 
   private void updateClassloaderComboBox() {
     List<String> classloaders = jvmService.getClassloaders();
-    classloaders.removeIf(classloader -> classloader.contains("bytebuddy")||classloader.contains("aopbuddy"));
+    classloaders.removeIf(
+        classloader -> classloader.contains("bytebuddy") || classloader.contains("aopbuddy"));
     classloaderModel.setClassloaders(classloaders);
     if (!classloaders.isEmpty()) {
       classloaderModel.setSelectedItem(classloaders.get(0));

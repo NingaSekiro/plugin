@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.Icon;
 import org.aopbuddy.plugin.infra.util.IconUtil;
-import org.aopbuddy.plugin.service.ConsoleStateService;
 import org.aopbuddy.plugin.service.WebSocketClientService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,13 +35,12 @@ public class WatchMethodLineMarkerProvider extends LineMarkerProviderDescriptor 
     }
     String methodKey = method.getContainingClass().getQualifiedName() + "#" + method.getName();
     Project project = element.getProject();
-    ConsoleStateService state = project.getService(ConsoleStateService.class);
-    if (!state.getWatchedMethodKeys().contains(methodKey)) {
+    WebSocketClientService ws = project.getService(WebSocketClientService.class);
+    if (!ws.getWatchedMethodKeys().contains(methodKey)) {
       return null;
     }
     Icon icon = IconUtil.getPluginIcon();
     GutterIconNavigationHandler<PsiElement> nav = (e, elt) -> {
-      WebSocketClientService ws = project.getService(WebSocketClientService.class);
       ws.sendUnwatchRequest(method.getContainingClass().getQualifiedName(), method.getName());
     };
     return new LineMarkerInfo<>(

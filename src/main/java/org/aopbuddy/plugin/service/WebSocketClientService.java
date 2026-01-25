@@ -7,21 +7,26 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import okhttp3.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 import okio.ByteString;
 import org.aopbuddy.plugin.infra.util.BalloonTipUtil;
 import org.aopbuddy.plugin.infra.util.DatabaseUtils;
 import org.aopbuddy.plugin.infra.util.OkHttpClientUtils;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service(Service.Level.PROJECT)
 public final class WebSocketClientService {
@@ -35,6 +40,7 @@ public final class WebSocketClientService {
   private final OkHttpClient okHttpClient = OkHttpClientUtils.getInstance();
   private volatile WebSocket webSocket;
   private final AtomicBoolean connected = new AtomicBoolean(false);
+  private final Set<String> watchedMethodKeys = ConcurrentHashMap.newKeySet();
 
   public WebSocketClientService(Project project) {
     this.project = project;
@@ -93,6 +99,24 @@ public final class WebSocketClientService {
     webSocket.send(json);
   }
 
+  public void sendGetWatchedRequest() {
+    ensureConnected();
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("type", "get_watched_request");
+    payload.put("projectId", project.getLocationHash());
+    String json = JsonUtil.toJson(payload);
+    webSocket.send(json);
+  }
+
+  public Set<String> getWatchedMethodKeys() {
+    return watchedMethodKeys;
+  }
+
+  public void clearWatchedMethodKeys() {
+    watchedMethodKeys.clear();
+    refreshHighlighters();
+  }
+
   private void ensureConnected() {
     if (!connected.get()) {
       connect();
@@ -100,23 +124,29 @@ public final class WebSocketClientService {
   }
 
   private final class WsListener extends WebSocketListener {
+
     @Override
     public void onOpen(WebSocket webSocket, Response response) {
       connected.set(true);
       LOGGER.info("WebSocket connected: " + response.message());
+      // 连接建立后自动查询当前watch状态
+      sendGetWatchedRequest();
     }
 
     @Override
     public void onMessage(WebSocket webSocket, String text) {
       try {
-        Map<String, Object> msg = JsonUtil.parse(text, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> msg = JsonUtil.parse(text, new TypeReference<Map<String, Object>>() {
+        });
         Object typeObj = msg.get("type");
         String type = typeObj == null ? "" : String.valueOf(typeObj);
         if ("records".equals(type)) {
           String table = String.valueOf(msg.getOrDefault("table",
               DatabaseUtils.safeTableName(project.getName()) + "_watch"));
           String payloadJson = JsonUtil.toJson(msg.get("payload"));
-          List<CallRecordDo> records = JsonUtil.parse(payloadJson, new TypeReference<List<CallRecordDo>>() {});
+          List<CallRecordDo> records = JsonUtil.parse(payloadJson,
+              new TypeReference<List<CallRecordDo>>() {
+              });
           if (records != null && !records.isEmpty()) {
             databaseService.execute(
                 org.aopbuddy.plugin.mapper.CallRecordMapper.class,
@@ -164,18 +194,36 @@ public final class WebSocketClientService {
     if (!ok) {
       return;
     }
-    Object classNameObj = msg.get("className");
-    Object methodNameObj = msg.get("methodName");
-    if (classNameObj == null || methodNameObj == null) {
-      return;
-    }
-    String methodKey = String.valueOf(classNameObj) + "#" + String.valueOf(methodNameObj);
-    if ("watch_request".equals(requestType)) {
-      consoleStateService.getWatchedMethodKeys().add(methodKey);
-      refreshHighlighters();
-    } else if ("unwatch_request".equals(requestType)) {
-      consoleStateService.getWatchedMethodKeys().remove(methodKey);
-      refreshHighlighters();
+
+    if ("get_watched_request".equals(requestType)) {
+      // 处理返回的watchedMethodKeys
+      Object watchedKeysObj = msg.get("watchedMethodKeys");
+      if (watchedKeysObj != null) {
+        watchedMethodKeys.clear();
+        if (watchedKeysObj instanceof List) {
+          List<?> keysList = (List<?>) watchedKeysObj;
+          for (Object key : keysList) {
+            if (key != null) {
+              watchedMethodKeys.add(String.valueOf(key));
+            }
+          }
+        }
+        refreshHighlighters();
+      }
+    } else {
+      Object classNameObj = msg.get("className");
+      Object methodNameObj = msg.get("methodName");
+      if (classNameObj == null || methodNameObj == null) {
+        return;
+      }
+      String methodKey = String.valueOf(classNameObj) + "#" + String.valueOf(methodNameObj);
+      if ("watch_request".equals(requestType)) {
+        watchedMethodKeys.add(methodKey);
+        refreshHighlighters();
+      } else if ("unwatch_request".equals(requestType)) {
+        watchedMethodKeys.remove(methodKey);
+        refreshHighlighters();
+      }
     }
   }
 
