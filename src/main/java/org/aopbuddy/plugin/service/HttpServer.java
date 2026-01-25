@@ -1,5 +1,6 @@
 package org.aopbuddy.plugin.service;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.io.BufferExposingByteArrayOutputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.EmptyHttpHeaders;
@@ -21,66 +22,80 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpServer extends RestService {
-    public Map<String, RouteHandler> routeHandlerMap = new HashMap<>();
 
-    public HttpServer() {
-        this.routeHandlerMap.put("methodRecords", new MethodRecordsServlet());
-        this.routeHandlerMap.put("methodChains", new MethodChainsServlet());
-        this.routeHandlerMap.put("mermaid", new MermaidServlet());
-        this.routeHandlerMap.put("record", new RecordServlet());
-        this.routeHandlerMap.put("packageNames", new InitConfigServlet());
-        this.routeHandlerMap.put("methodDetail", new MethodDetailServlet());
-    }
+  private static final Logger LOGGER = Logger.getInstance(HttpServer.class);
 
-    @Nullable
-    @Override
-    public String execute(@NotNull QueryStringDecoder queryStringDecoder, @NotNull FullHttpRequest fullHttpRequest, @NotNull ChannelHandlerContext channelHandlerContext) throws IOException {
-        String path = queryStringDecoder.path();
-        String servicePath = "/api/" + getServiceName() + "/";
-        String resourcePath = path.substring(servicePath.length());
-        Set<String> strings = routeHandlerMap.keySet();
-        if (resourcePath.contains("index.html") || resourcePath.contains("assets")
-            || !strings.contains(resourcePath)) {
-            handleStaticResource(channelHandlerContext, fullHttpRequest, resourcePath);
-        } else {
-            String json = routeHandlerMap.get(resourcePath).handle(queryStringDecoder, fullHttpRequest, channelHandlerContext);
-            sendJson(channelHandlerContext, fullHttpRequest, json);
-        }
-        return null;
-    }
+  public Map<String, RouteHandler> routeHandlerMap = new HashMap<>();
 
-    private void handleStaticResource(ChannelHandlerContext context, FullHttpRequest request, String path) {
-        try {
-            Path pathTmp = PluginPathUtil.getPluginPath().resolve(path);
-            FileResponses.INSTANCE.sendFile(request, context.channel(), pathTmp, EmptyHttpHeaders.INSTANCE);
-        } catch (Exception e) {
-            LOG.error("Error handling static resource: " + path, e);
-        }
-    }
+  public HttpServer() {
+    this.routeHandlerMap.put("methodRecords", new MethodRecordsServlet());
+    this.routeHandlerMap.put("methodChains", new MethodChainsServlet());
+    this.routeHandlerMap.put("mermaid", new MermaidServlet());
+    this.routeHandlerMap.put("record", new RecordServlet());
+    this.routeHandlerMap.put("packageNames", new InitConfigServlet());
+    this.routeHandlerMap.put("methodDetail", new MethodDetailServlet());
+  }
 
-    private void sendJson(ChannelHandlerContext context, FullHttpRequest request, String json) throws IOException {
-        BufferExposingByteArrayOutputStream out = new BufferExposingByteArrayOutputStream();
-        out.write(json.getBytes(StandardCharsets.UTF_8));
-        send(
-                out,                 // 响应体数据
-                request,             // 原始请求
-                context            // Netty context
-        );
+  @Nullable
+  @Override
+  public String execute(@NotNull QueryStringDecoder queryStringDecoder,
+      @NotNull FullHttpRequest fullHttpRequest,
+      @NotNull ChannelHandlerContext channelHandlerContext) throws IOException {
+    try {
+      String path = queryStringDecoder.path();
+      String servicePath = "/api/" + getServiceName() + "/";
+      String resourcePath = path.substring(servicePath.length());
+      Set<String> strings = routeHandlerMap.keySet();
+      if (resourcePath.contains("index.html") || resourcePath.contains("assets")
+          || !strings.contains(resourcePath)) {
+        handleStaticResource(channelHandlerContext, fullHttpRequest, resourcePath);
+      } else {
+        String json = routeHandlerMap.get(resourcePath)
+            .handle(queryStringDecoder, fullHttpRequest, channelHandlerContext);
+        sendJson(channelHandlerContext, fullHttpRequest, json);
+      }
+    } catch (Throwable e) {
+      LOGGER.error("Error handling request: ", e);
     }
+    return null;
+  }
 
-    @NotNull
-    @Override
-    protected String getServiceName() {
-        return "aopPlugin";
+  private void handleStaticResource(ChannelHandlerContext context, FullHttpRequest request,
+      String path) {
+    try {
+      Path pathTmp = PluginPathUtil.getPluginPath().resolve(path);
+      FileResponses.INSTANCE.sendFile(request, context.channel(), pathTmp,
+          EmptyHttpHeaders.INSTANCE);
+    } catch (Exception e) {
+      LOG.error("Error handling static resource: " + path, e);
     }
+  }
 
-    @Override
-    protected boolean isHostTrusted(@NotNull FullHttpRequest request, @NotNull QueryStringDecoder queryStringDecoder) {
-        return true;
-    }
+  private void sendJson(ChannelHandlerContext context, FullHttpRequest request, String json)
+      throws IOException {
+    BufferExposingByteArrayOutputStream out = new BufferExposingByteArrayOutputStream();
+    out.write(json.getBytes(StandardCharsets.UTF_8));
+    send(
+        out,                 // 响应体数据
+        request,             // 原始请求
+        context            // Netty context
+    );
+  }
 
-    @Override
-    protected boolean isMethodSupported(@NotNull HttpMethod method) {
-        return method == HttpMethod.GET || method == HttpMethod.POST;
-    }
+  @NotNull
+  @Override
+  protected String getServiceName() {
+    return "aopPlugin";
+  }
+
+  @Override
+  protected boolean isHostTrusted(@NotNull FullHttpRequest request,
+      @NotNull QueryStringDecoder queryStringDecoder) {
+    return true;
+  }
+
+  @Override
+  protected boolean isMethodSupported(@NotNull HttpMethod method) {
+    return method == HttpMethod.GET || method == HttpMethod.POST;
+  }
 }
