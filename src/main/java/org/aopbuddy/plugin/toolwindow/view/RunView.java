@@ -2,6 +2,7 @@ package org.aopbuddy.plugin.toolwindow.view;
 
 import com.intellij.icons.AllIcons;
 import lombok.Getter;
+import org.aopbuddy.plugin.infra.util.I18nUtil;
 import org.aopbuddy.plugin.toolwindow.model.RunModel;
 
 import javax.swing.*;
@@ -18,7 +19,7 @@ public class RunView {
         runButton = new JButton();
         runButton.setIcon(AllIcons.Actions.RunAll);
         runButton.setContentAreaFilled(false);
-        runButton.setToolTipText("执行");
+        runButton.setToolTipText(I18nUtil.message("run.view.tool.title"));
         runButton.setPreferredSize(new Dimension(30, 30));
         runButton.addActionListener(e -> runModel.eval());
     }

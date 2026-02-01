@@ -1,6 +1,7 @@
 package org.aopbuddy.plugin.toolwindow.view;
 
 import lombok.Getter;
+import org.aopbuddy.plugin.infra.util.I18nUtil;
 import org.aopbuddy.plugin.toolwindow.component.HintComboBox;
 import org.aopbuddy.plugin.toolwindow.model.ClassloaderModel;
 
@@ -13,7 +14,7 @@ public class ClassloaderView {
     public ClassloaderView(ClassloaderModel classloaderModel) {
         this.classloaderModel = classloaderModel;
         this.classloaderComboBox = new HintComboBox<>(200);
-        this.classloaderComboBox.setHint("2.选择classLoader");
+        this.classloaderComboBox.setHint(I18nUtil.message("classloader.view.hint"));
         this.classloaderComboBox.setModel(classloaderModel);
         this.classloaderComboBox.addActionListener(e -> {
             // 更新状态服务中的选中ClassLoader

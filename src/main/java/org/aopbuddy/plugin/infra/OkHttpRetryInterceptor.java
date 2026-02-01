@@ -57,7 +57,7 @@ public class OkHttpRetryInterceptor implements Interceptor {
           .request(request)
           .body(ResponseBody.create("timeout", MediaType.parse("text/plain")))
           .build();
-    } catch (Exception e2) {
+    } catch (Throwable e2) {
       LOGGER.error("unhandled Exception error", e2);
       // interceptor 返回 null 会报 IllegalStateException 异常
       return new Response.Builder()

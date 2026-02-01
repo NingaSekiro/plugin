@@ -3,6 +3,7 @@ package org.aopbuddy.plugin.action;
 import cn.hutool.core.io.FileUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerManager;
@@ -21,21 +22,24 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Data;
 import org.aopbuddy.plugin.infra.util.BalloonTipUtil;
 import org.aopbuddy.plugin.infra.util.DebugToolsIdeaClassUtil;
+import org.aopbuddy.plugin.infra.util.I18nUtil;
 import org.aopbuddy.plugin.service.JvmService;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class HotswapAction extends AnAction {
 
-  private static Logger log = Logger.getInstance(HotswapAction.class);
+  private static Logger LOGGER = Logger.getInstance(HotswapAction.class);
 
   private Project project;
 
@@ -82,13 +86,13 @@ public class HotswapAction extends AnAction {
     compilerManager.compile(scope, (aborted, errors, warnings, compileContext) -> {
       if (errors > 0) {
         // 记录错误日志
-        log.error("Compilation failed with errors: " + errors + ", warnings: " + warnings);
+        LOGGER.error("Compilation failed with errors: " + errors + ", warnings: " + warnings);
         return;
       }
       // 编译成功后，更新文件并上传
       ReadAction.nonBlocking(() -> {
             Set<VirtualFile> allOutputs = new HashSet<>();
-            List<ClassFilePath> allOutputClasses = new ArrayList<>();
+            Map<VirtualFile, List<String>> outputDirToBaseNames = new HashMap<>();
             // 遍历所有虚拟文件
             virtualFiles.forEach((selectedFile) -> {
               // 获取输出目录
@@ -113,30 +117,51 @@ public class HotswapAction extends AnAction {
                   .replace(".java", "");
               // 构建源文件的基本名称
               String sourceFileBaseName = packageName.replace(".", "/") + "/" + className;
-              // 收集编译后的类文件
-              List<ClassFilePath> outputClasses = collectClassFiles(outputDirectory,
-                  sourceFileBaseName);
-              // 如果未找到类文件，再次刷新输出目录并尝试收集
-              if (outputClasses.isEmpty()) {
-                outputDirectory.refresh(false, true);
-                outputClasses = collectClassFiles(outputDirectory, sourceFileBaseName);
-              }
-              allOutputClasses.addAll(outputClasses);
+              outputDirToBaseNames.computeIfAbsent(outputDirectory, k -> new ArrayList<>())
+                  .add(sourceFileBaseName);
             });
+            return Map.entry(allOutputs, outputDirToBaseNames);
+            // =========================
+            // 第二阶段：UI 线程，允许 refresh + IO
+            // =========================
+          }).finishOnUiThread(ModalityState.defaultModalityState(), result -> {
+            //输出目录
+            Set<VirtualFile> allOutputs = result.getKey();
+            // 输出目录和对应的 sourceFileBaseName
+            Map<VirtualFile, List<String>> outputDirToBaseNames = result.getValue();
+            List<ClassFilePath> allOutputClasses = new ArrayList<>();
+            for (VirtualFile outputDirectory : allOutputs) {
+              if (!outputDirectory.isValid()) {
+                continue;
+              }
+              // 如果未找到类文件，再次刷新输出目录并尝试收集
+              outputDirectory.refresh(false, true);
+              List<String> baseNames = outputDirToBaseNames.get(outputDirectory);
+              if (baseNames == null) {
+                continue;
+              }
+              for (String sourceFileBaseName : baseNames) {
+                // 收集编译后的类文件
+                List<ClassFilePath> outputClasses = collectClassFiles(outputDirectory,
+                    sourceFileBaseName);
+                allOutputClasses.addAll(outputClasses);
+              }
+            }
             if (CollectionUtils.isEmpty(allOutputClasses)) {
-              return null;
+              return;
             }
             String s = project.getService(JvmService.class).hotSwap(allOutputClasses);
             if ("success".equals(s)) {
-              BalloonTipUtil.notifyInfo(project, "热部署成功");
+              BalloonTipUtil.notifyInfo(project,
+                  I18nUtil.message("hotswap.action.notification.success"));
             } else {
               BalloonTipUtil.notifyError(project, s);
             }
-            return null;
           })
           .submit(AppExecutorUtil.getAppExecutorService())
           .onError(throwable -> {
-
+            LOGGER.error("Hotswap failed", throwable);
+            BalloonTipUtil.notifyError(project, throwable.getMessage());
           });
     });
   }

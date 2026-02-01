@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.aopbuddy.plugin.infra.ToolWindowUpdateNotifier;
+import org.aopbuddy.plugin.infra.util.I18nUtil;
 import org.aopbuddy.plugin.service.ConsoleStateService;
 import org.aopbuddy.plugin.service.DbSyncService;
 import org.aopbuddy.plugin.service.HeartBeatService;
@@ -141,7 +142,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     // 结果面板
     JBTabbedPane groovyTabbedPane = new JBTabbedPane();
     groovyTabbedPane.setBorder(new CustomLineBorder(JBUI.insetsTop(1)));
-    groovyTabbedPane.add("执行方法结果", this.runResultView.getRunStatusEditor());
+    groovyTabbedPane.add(I18nUtil.message("groovy.console.tab.result"), this.runResultView.getRunStatusEditor());
     JPanel rootPanel = new JPanel(new BorderLayout());
     rootPanel.setBorder(JBUI.Borders.empty());
     rootPanel.add(toolbarPanel, "North");
@@ -166,7 +167,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     JButton recordActionButton = new JButton();
     recordActionButton.setIcon(AllIcons.CodeWithMe.CwmCamOn);
     recordActionButton.setContentAreaFilled(false);
-    recordActionButton.setToolTipText("录制");
+    recordActionButton.setToolTipText(I18nUtil.message("groovy.console.action.record"));
     recordActionButton.setPreferredSize(new Dimension(30, -1));
     recordActionButton.addActionListener(e -> {
       RecordFrame instance = RecordFrame.getInstance(this.project);
@@ -179,7 +180,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     JButton clearActionButton = new JButton();
     clearActionButton.setIcon(AllIcons.Actions.GC);
     clearActionButton.setContentAreaFilled(false);
-    clearActionButton.setToolTipText("清除执行结果");
+    clearActionButton.setToolTipText(I18nUtil.message("groovy.console.action.clear"));
     clearActionButton.setPreferredSize(new Dimension(30, -1));
     clearActionButton.addActionListener(e -> {
       this.runResultModel.setStatus("");

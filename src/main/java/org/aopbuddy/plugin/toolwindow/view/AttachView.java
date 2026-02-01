@@ -2,6 +2,7 @@ package org.aopbuddy.plugin.toolwindow.view;
 
 import lombok.Getter;
 import org.aopbuddy.plugin.infra.model.HttpServer;
+import org.aopbuddy.plugin.infra.util.I18nUtil;
 import org.aopbuddy.plugin.toolwindow.component.JvmProcessSelectorDialog;
 import org.aopbuddy.plugin.toolwindow.model.AttachModel;
 
@@ -18,7 +19,7 @@ public class AttachView {
 
   public AttachView(AttachModel model) {
     this.attachModel = model;
-    attachButton = new JButton("1.未连接JVM");
+    attachButton = new JButton(I18nUtil.message("attach.view.status.disconnected"));
     attachButton.setContentAreaFilled(false);
     attachButton.setPreferredSize(new Dimension(200, 30));
     attachButton.setModel(attachModel);
@@ -29,7 +30,7 @@ public class AttachView {
 
     });
     attachModel.addChangeListener(e -> {
-      attachButton.setText(attachModel.isAttached() ? "2.已连接JVM" : "1.未连接JVM");
+      attachButton.setText(attachModel.isAttached() ? I18nUtil.message("attach.view.status.connected") : I18nUtil.message("attach.view.status.disconnected"));
     });
   }
 
