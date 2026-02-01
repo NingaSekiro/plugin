@@ -28,11 +28,11 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
 import java.awt.BorderLayout;
 import javax.swing.Icon;
@@ -61,42 +61,45 @@ public class RunGroovyAction extends AnAction {
     // 保存当前文件
     FileDocumentManager.getInstance().saveDocument(editor.getDocument());
     String content = editor.getDocument().getText();
-    ToolWindowManager.getInstance(project).invokeLater(() -> {
-      String eval = jvmService.eval(content);
-      RunContentManager runContentManager = RunContentManager.getInstance(project);
-      Executor executor = DefaultRunExecutor.getRunExecutorInstance();
-      // 创建结果展示面板
-      String consoleTitle = String.format("Groovy Execution Result-%s",
-          editor.getVirtualFile().getName());
-      runContentManager.getAllDescriptors().stream()
-          .filter(descriptor -> descriptor.getDisplayName().equals(consoleTitle))
-          .findFirst()
-          .ifPresent(
-              contentDescriptor -> runContentManager.removeRunContent(executor, contentDescriptor));
-      MyEditorTextField myEditorTextField = new MyEditorTextField(project, JsonFileType.INSTANCE);
-      myEditorTextField.setText(eval,
-          quickIsJson(eval) ? JsonFileType.INSTANCE : PlainTextFileType.INSTANCE);
-      // 创建包含结果文本区域的面板
-      JPanel resultPanel = new JPanel(new BorderLayout());
-      resultPanel.add(myEditorTextField, BorderLayout.CENTER);
+    ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      String eval = jvmService.eval(content); // 后台线程执行
+      ApplicationManager.getApplication().invokeLater(() -> {
+        RunContentManager runContentManager = RunContentManager.getInstance(project);
+        Executor executor = DefaultRunExecutor.getRunExecutorInstance();
+        // 创建结果展示面板
+        String consoleTitle = String.format("Groovy Execution Result-%s",
+            editor.getVirtualFile().getName());
+        runContentManager.getAllDescriptors().stream()
+            .filter(descriptor -> descriptor.getDisplayName().equals(consoleTitle))
+            .findFirst()
+            .ifPresent(
+                contentDescriptor -> runContentManager.removeRunContent(executor,
+                    contentDescriptor));
+        MyEditorTextField myEditorTextField = new MyEditorTextField(project, JsonFileType.INSTANCE);
+        myEditorTextField.setText(eval,
+            quickIsJson(eval) ? JsonFileType.INSTANCE : PlainTextFileType.INSTANCE);
+        // 创建包含结果文本区域的面板
+        JPanel resultPanel = new JPanel(new BorderLayout());
+        resultPanel.add(myEditorTextField, BorderLayout.CENTER);
 
-      RunContentDescriptor runContentDescriptor = new RunContentDescriptor(null, null,
-          resultPanel, consoleTitle) {
-        @Override
-        public boolean isContentReuseProhibited() {
-          return true;
-        }
+        RunContentDescriptor runContentDescriptor = new RunContentDescriptor(null, null,
+            resultPanel, consoleTitle) {
+          @Override
+          public boolean isContentReuseProhibited() {
+            return true;
+          }
 
-        @Override
-        public Icon getIcon() {
-          return IconUtil.getPluginIcon();
-        }
-      };
-      runContentManager.showRunContent(executor, runContentDescriptor);
+          @Override
+          public Icon getIcon() {
+            return IconUtil.getPluginIcon();
+          }
+        };
+        runContentManager.showRunContent(executor, runContentDescriptor);
+      });
     });
   }
 
-//  用于控制 AnAction.update() 方法的执行线程：
+  //  用于控制 AnAction.update() 方法的执行线程：
   @Override
   public @NotNull ActionUpdateThread getActionUpdateThread() {
     return ActionUpdateThread.BGT;
