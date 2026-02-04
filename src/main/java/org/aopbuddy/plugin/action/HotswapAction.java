@@ -103,10 +103,6 @@ public class HotswapAction extends AnAction {
               if (outputDirectory == null) {
                 return;
               }
-              // 如果当前输出目录已经收集过，跳过此目录
-              if (allOutputs.contains(outputDirectory)) {
-                return;
-              }
               allOutputs.add(outputDirectory);
               // 获取源文件路径和内容
               String sourceFilePath = selectedFile.getPath();
@@ -127,6 +123,7 @@ public class HotswapAction extends AnAction {
             // 第二阶段：UI 线程，允许 refresh + IO
             // =========================
           }).finishOnUiThread(ModalityState.defaultModalityState(), result -> {
+            LOGGER.info("HotswapAction localCompiler result: " + result);
             //输出目录
             Set<VirtualFile> allOutputs = result.getKey();
             // 输出目录和对应的 sourceFileBaseName
