@@ -32,7 +32,7 @@ public final class OkHttpClientUtils {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.MINUTES)
-                .addInterceptor(new OkHttpRetryInterceptor(6))
+                .addInterceptor(new OkHttpRetryInterceptor(3))
                 .proxy(Proxy.NO_PROXY)
                 .retryOnConnectionFailure(true)
                 .build();

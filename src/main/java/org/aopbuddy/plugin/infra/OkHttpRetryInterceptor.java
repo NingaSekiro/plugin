@@ -2,6 +2,7 @@ package org.aopbuddy.plugin.infra;
 
 import com.intellij.openapi.diagnostic.Logger;
 import io.netty.handler.timeout.ReadTimeoutException;
+import java.net.ConnectException;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -36,7 +37,7 @@ public class OkHttpRetryInterceptor implements Interceptor {
 
   @Override
   public Response intercept(Chain chain) {
-    return retry(chain, maxRetry);
+    return retry(chain, 0);
   }
 
   private Response retry(Chain chain, int retryCet) {
@@ -44,7 +45,7 @@ public class OkHttpRetryInterceptor implements Interceptor {
     Response response;
     try {
       response = chain.proceed(request);
-    } catch (ConnectTimeoutException | ReadTimeoutException e) {
+    } catch (ConnectTimeoutException | ReadTimeoutException | ConnectException e) {
       LOGGER.error("retry request: " + retryCet + " times, error", e);
       if (maxRetry > retryCet) {
         return retry(chain, retryCet + 1);

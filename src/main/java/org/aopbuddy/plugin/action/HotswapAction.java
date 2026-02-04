@@ -3,6 +3,7 @@ package org.aopbuddy.plugin.action;
 import cn.hutool.core.io.FileUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.compiler.CompileScope;
@@ -33,6 +34,7 @@ import lombok.Data;
 import org.aopbuddy.plugin.infra.util.BalloonTipUtil;
 import org.aopbuddy.plugin.infra.util.DebugToolsIdeaClassUtil;
 import org.aopbuddy.plugin.infra.util.I18nUtil;
+import org.aopbuddy.plugin.service.HeartBeatService;
 import org.aopbuddy.plugin.service.JvmService;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -204,6 +206,18 @@ public class HotswapAction extends AnAction {
     Pattern pattern = Pattern.compile(classnamePath + "(\\$\\w+)?\\.class");
     Matcher matcher = pattern.matcher(fullPath);
     return matcher.find();
+  }
+
+  @Override
+  public void update(@NotNull AnActionEvent e) {
+    Project project = e.getProject();
+    Presentation presentation = e.getPresentation();
+    if (project == null) {
+      presentation.setEnabledAndVisible(false);
+      return;
+    }
+    HeartBeatService heartBeatService = project.getService(HeartBeatService.class);
+    presentation.setEnabledAndVisible(heartBeatService.isStatus());
   }
 
   @Data
