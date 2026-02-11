@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
@@ -38,6 +40,14 @@ public class RunMethodAction extends AnAction {
     ToolWindowUpdateNotifier publisher = project.getMessageBus()
         .syncPublisher(ToolWindowUpdateNotifier.GROOVY_CONSOLE_CHANGED_TOPIC);
     publisher.onUpdate(codeSnippet);
+
+    // 显示 CodeExecutorToolWindowFactory 窗口
+    ToolWindow toolWindow = ToolWindowManager.getInstance(project)
+        .getToolWindow("AopPlugin.Tool");
+    if (toolWindow!=null){
+      toolWindow.show();
+    }
+
   }
 
   /**
@@ -67,6 +77,8 @@ public class RunMethodAction extends AnAction {
             Character.toLowerCase(simpleClassName.charAt(0)) + simpleClassName.substring(1);
         sb.append(simpleClassName).append(" ").append(variableName).append(" = getObject(")
             .append(simpleClassName).append(".class);\n");
+        sb.append("this.metaClass.propertyMissing = { \n" + "    ").append(variableName)
+            .append(".\"$it\" \n").append("}\n");
         sb.append("toJson(").append(variableName).append(".").append(method.getName())
             .append("());");
       }

@@ -2,7 +2,9 @@ package org.aopbuddy.plugin.infra;
 
 import com.intellij.openapi.diagnostic.Logger;
 import io.netty.handler.timeout.ReadTimeoutException;
+import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -45,28 +47,27 @@ public class OkHttpRetryInterceptor implements Interceptor {
     Response response;
     try {
       response = chain.proceed(request);
-    } catch (ConnectTimeoutException | ReadTimeoutException | ConnectException e) {
-      LOGGER.error("retry request: " + retryCet + " times, error", e);
-      if (maxRetry > retryCet) {
+    } catch (Throwable e) {
+      LOGGER.info("Request failed, attempt " + (retryCet + 1) + " of " + (maxRetry + 1));
+      
+      if (retryCet < maxRetry) {
+        try {
+          // 短暂延迟后重试，避免立即重试导致的连接风暴
+          Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+        }
         return retry(chain, retryCet + 1);
       }
-      // interceptor 返回 null 会报 IllegalStateException 异常
+      
+      LOGGER.warn("Max retry attempts reached, returning error response");
+      // 无论什么异常，达到最大重试次数后都返回错误响应
       return new Response.Builder()
-          .code(504) // Gateway Timeout
+          .code(503)
           .protocol(Protocol.HTTP_1_1)
-          .message("Gateway Timeout")
+          .message("Service Unavailable")
           .request(request)
-          .body(ResponseBody.create("timeout", MediaType.parse("text/plain")))
-          .build();
-    } catch (Throwable e2) {
-      LOGGER.error("unhandled Exception error", e2);
-      // interceptor 返回 null 会报 IllegalStateException 异常
-      return new Response.Builder()
-          .code(500) // Internal Server Error
-          .protocol(Protocol.HTTP_1_1)
-          .message("Internal Server Error")
-          .request(request)
-          .body(ResponseBody.create("Internal Server Error", MediaType.parse("text/plain")))
+          .body(ResponseBody.create("connection failed", MediaType.parse("text/plain")))
           .build();
     }
     return response;

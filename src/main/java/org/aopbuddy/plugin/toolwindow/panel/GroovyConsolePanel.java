@@ -142,7 +142,8 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     // 结果面板
     JBTabbedPane groovyTabbedPane = new JBTabbedPane();
     groovyTabbedPane.setBorder(new CustomLineBorder(JBUI.insetsTop(1)));
-    groovyTabbedPane.add(I18nUtil.message("groovy.console.tab.result"), this.runResultView.getRunStatusEditor());
+    groovyTabbedPane.add(I18nUtil.message("groovy.console.tab.result"),
+        this.runResultView.getRunStatusEditor());
     JPanel rootPanel = new JPanel(new BorderLayout());
     rootPanel.setBorder(JBUI.Borders.empty());
     rootPanel.add(toolbarPanel, "North");

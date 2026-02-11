@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.aopbuddy"
-version = "1.0.2"
+version = "1.0.3"
 
 
 repositories {

@@ -17,6 +17,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.aopbuddy.plugin.action.HotswapAction.ClassFilePath;
 import org.aopbuddy.plugin.infra.model.HttpServer;
 import org.aopbuddy.plugin.infra.util.OkHttpClientUtils;
@@ -82,12 +83,17 @@ public final class JvmService {
         .method("GET", null)
         .build();
     try {
-      Response response = okHttpClient.newCall(request).execute();
-      if (!response.isSuccessful()) {
-        return new ArrayList<>();
+      try (Response response = okHttpClient.newCall(request).execute()) {
+        if (!response.isSuccessful()) {
+          return new ArrayList<>();
+        }
+        ResponseBody body = response.body();
+        if (body == null) {
+          return new ArrayList<>();
+        }
+        return JsonUtil.parse(body.string(), new TypeReference<>() {
+        });
       }
-      return JsonUtil.parse(response.body().string(), new TypeReference<>() {
-      });
     } catch (Throwable e) {
       LOGGER.error("getClassloaders error", e);
       return new ArrayList<>();
@@ -108,10 +114,12 @@ public final class JvmService {
             RequestBody.create(JsonUtil.toJson(evalRequest), MediaType.parse("application/json")))
         .build();
     try {
-      Response response = okHttpClient.newCall(request).execute();
-      return response.body().string();
+      try (Response response = okHttpClient.newCall(request).execute()) {
+        ResponseBody body = response.body();
+        return body == null ? null : body.string();
+      }
     } catch (Throwable e) {
-      LOGGER.error("eval fail",e);
+      LOGGER.error("eval fail", e);
       return null;
     }
   }
@@ -128,8 +136,10 @@ public final class JvmService {
             MediaType.parse("application/json")))
         .build();
     try {
-      Response response = okHttpClient.newCall(request).execute();
-      return response.body().string();
+      try (Response response = okHttpClient.newCall(request).execute()) {
+        ResponseBody body = response.body();
+        return body == null ? null : body.string();
+      }
     } catch (Throwable e) {
       LOGGER.error("hotSwap error", e);
       return null;

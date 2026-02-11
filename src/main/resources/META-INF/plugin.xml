@@ -70,6 +70,11 @@
     <!-- Notification group configuration -->
     <notificationGroup id="AopBuddy.NotificationGroup" displayType="BALLOON"/>
   </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.groovy">
+    <membersContributor implementation="org.aopbuddy.plugin.groovy.GlobalScriptMembersContributor"/>
+  </extensions>
+
   <actions>
     <action id="AopRunMethodAction" class="org.aopbuddy.plugin.action.RunMethodAction" icon="/icons/icon.svg"
       text="Run The Method">
