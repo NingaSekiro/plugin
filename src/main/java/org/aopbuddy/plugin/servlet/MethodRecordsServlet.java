@@ -20,7 +20,9 @@ public class MethodRecordsServlet implements RouteHandler {
 
     @Override
     public String handle(QueryStringDecoder queryStringDecoder, FullHttpRequest request, ChannelHandlerContext context) {
-        List<String> dbNames = databaseService.execute(CallRecordMapper.class, mapper -> mapper.selectAllTableNames());
+        List<String> dbNames = databaseService.execute(CallRecordMapper.class,
+            CallRecordMapper::selectAllTableNames);
+        dbNames.removeIf(name -> name.endsWith("_WATCH"));
         return JsonUtil.toJson(dbNames);
     }
 }

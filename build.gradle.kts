@@ -17,7 +17,7 @@ repositories {
 intellij {
     version.set("2023.2.6")
     type.set("IC") // Target IDE Platform
-
+    pluginName.set("JavaInsight") // 设置插件名称
     plugins.set(
         listOf(
             "java",

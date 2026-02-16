@@ -59,7 +59,6 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
   private final RunView runView;
   private final RunModel runModel;
 
-
   public GroovyConsolePanel(Project project) {
     super(false, "JZ.ConsoleRun", 0.6F);
     this.project = project;
@@ -100,8 +99,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
             this.updateClassloaderComboBox();
           }
           this.attachModel.setStatus(status);
-        }
-    );
+        });
   }
 
   @Override
@@ -110,7 +108,6 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
       attachView.dispose();
     }
   }
-
 
   private JComponent getGroovyConsolePanel() {
     JPanel toolbarPanel = new JPanel();
@@ -138,7 +135,7 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     toolbarPanel.setBorder(new CustomLineBorder(JBUI.insetsBottom(1)));
     toolbarPanel.add(createClearActionButton());
     toolbarPanel.add(Box.createHorizontalGlue());
-//        toolbarPanel.add(Box.createHorizontalStrut(5));
+    // toolbarPanel.add(Box.createHorizontalStrut(5));
     // 结果面板
     JBTabbedPane groovyTabbedPane = new JBTabbedPane();
     groovyTabbedPane.setBorder(new CustomLineBorder(JBUI.insetsTop(1)));
@@ -151,7 +148,6 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
     return rootPanel;
   }
 
-
   private void updateClassloaderComboBox() {
     List<String> classloaders = jvmService.getClassloaders();
     classloaders.removeIf(
@@ -162,7 +158,6 @@ public class GroovyConsolePanel extends OnePixelSplitter implements Disposable {
       consoleStateService.setSelectedClassloader(classloaders.get(0));
     }
   }
-
 
   private Component createRecordActionButton() {
     JButton recordActionButton = new JButton();

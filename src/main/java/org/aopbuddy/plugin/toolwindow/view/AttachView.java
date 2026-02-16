@@ -30,7 +30,9 @@ public class AttachView {
 
     });
     attachModel.addChangeListener(e -> {
-      attachButton.setText(attachModel.isAttached() ? I18nUtil.message("attach.view.status.connected") : I18nUtil.message("attach.view.status.disconnected"));
+      attachButton.setText(
+          attachModel.isAttached() ? I18nUtil.message("attach.view.status.connected")
+              : I18nUtil.message("attach.view.status.disconnected"));
     });
   }
 

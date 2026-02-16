@@ -26,8 +26,18 @@ public final class RecordFrame extends JFrame implements Disposable {
     }
 
     public void showWindow() {
-        this.setVisible(true);
+        if (!this.isVisible()) {
+            this.setVisible(true);
+        }
+
+        int state = this.getExtendedState();
+        if ((state & JFrame.ICONIFIED) != 0) {
+            this.setExtendedState(state & ~JFrame.ICONIFIED);
+        }
+
         this.setAlwaysOnTop(true);
+        this.toFront();
+        this.requestFocus();
         this.setAlwaysOnTop(false);
     }
 

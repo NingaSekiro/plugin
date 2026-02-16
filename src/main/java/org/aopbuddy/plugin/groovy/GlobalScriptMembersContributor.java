@@ -6,6 +6,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.ResolveState;
 import com.intellij.psi.impl.light.LightMethodBuilder;
 import com.intellij.psi.scope.PsiScopeProcessor;
+import com.intellij.psi.scope.ElementClassHint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.groovy.GroovyLanguage;
 import org.jetbrains.plugins.groovy.lang.psi.GroovyFile;
@@ -20,11 +21,15 @@ public class GlobalScriptMembersContributor extends NonCodeMembersContributor {
       @NotNull ResolveState state) {
 
     PsiElement psiFile = place.getContainingFile();
-    if (!(psiFile instanceof GroovyFile)) {
+    if (!(psiFile instanceof GroovyFile groovyFile)) {
       return;
     }
-    GroovyFile groovyFile = (GroovyFile) psiFile;
     if (!groovyFile.isScript()) {
+      return;
+    }
+
+    ElementClassHint hint = processor.getHint(ElementClassHint.KEY);
+    if (hint != null && !hint.shouldProcess(ElementClassHint.DeclarationKind.METHOD)) {
       return;
     }
 
