@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.aopbuddy"
-version = "1.0.3"
+version = "1.0.5"
 
 
 repositories {
@@ -34,11 +34,10 @@ dependencies {
     implementation("org.mybatis:mybatis:3.5.16")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.h2database:h2:2.3.232")
-    // junit5
-
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0-M1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M1")
+    // junit5 - 使用 5.9.4 与 IntelliJ SDK 2023.2.6 捆绑版本对齐
+        testImplementation(platform("org.junit:junit-bom:5.9.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
     testCompileOnly("org.projectlombok:lombok:1.18.30")

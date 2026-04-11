@@ -2,14 +2,15 @@ package org.aopbuddy.plugin.toolwindow.panel;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.jcef.JBCefBrowser;
-import org.aopbuddy.plugin.service.DbSyncService;
-import org.jetbrains.builtInWebServer.BuiltInServerOptions;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Window;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.aopbuddy.plugin.infra.keyboardhandler.KeyBoardHandler;
+import org.aopbuddy.plugin.service.DbSyncService;
+import org.jetbrains.builtInWebServer.BuiltInServerOptions;
 
 public class MermaidPanel {
 
@@ -24,6 +25,7 @@ public class MermaidPanel {
     public JComponent getMermaidPanel() {
         JBCefBrowser jbCefBrowser = new JBCefBrowser();
         jbCefBrowser.loadURL(getPath());
+        jbCefBrowser.getJBCefClient().addKeyboardHandler(new KeyBoardHandler(jbCefBrowser), jbCefBrowser.getCefBrowser());
         JComponent component = jbCefBrowser.getComponent();
         component.addHierarchyListener(e -> {
             if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0) {

@@ -44,7 +44,7 @@ public class RunMethodAction extends AnAction {
     // 显示 CodeExecutorToolWindowFactory 窗口
     ToolWindow toolWindow = ToolWindowManager.getInstance(project)
         .getToolWindow("AopPlugin.Tool");
-    if (toolWindow!=null){
+    if (toolWindow != null) {
       toolWindow.show();
     }
 
@@ -79,6 +79,9 @@ public class RunMethodAction extends AnAction {
             .append(simpleClassName).append(".class);\n");
         sb.append("this.metaClass.propertyMissing = { \n" + "    ").append(variableName)
             .append(".\"$it\" \n").append("}\n");
+        sb.append("this.metaClass.methodMissing = {String name,args-> \n" + "    ")
+            .append(variableName)
+            .append(".\"$name\"(*args) \n").append("}\n");
         sb.append("toJson(").append(variableName).append(".").append(method.getName())
             .append("());");
       }
